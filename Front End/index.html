@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Statistics Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">⚾</span>
+                <h1>Baseball Stats Manager</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#players" class="nav-link" data-section="players">Players</a></li>
+                    <li><a href="#batting" class="nav-link" data-section="batting">Batting</a></li>
+                    <li><a href="#pitching" class="nav-link" data-section="pitching">Pitching</a></li>
+                    <li><a href="#fielding" class="nav-link" data-section="fielding">Fielding</a></li>
+                    <li><a href="#reports" class="nav-link" data-section="reports">Reports</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="section-header">
+                <h2>Team Dashboard</h2>
+                <p class="section-description">Overview of your team's performance</p>
+            </div>
+
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon batting-icon">🏏</div>
+                    <div class="stat-info">
+                        <h3>Team Batting Avg</h3>
+                        <p class="stat-value">.285</p>
+                        <span class="stat-label">Season Average</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pitching-icon">⚡</div>
+                    <div class="stat-info">
+                        <h3>Team ERA</h3>
+                        <p class="stat-value">3.42</p>
+                        <span class="stat-label">Earned Run Average</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon fielding-icon">🧤</div>
+                    <div class="stat-info">
+                        <h3>Fielding %</h3>
+                        <p class="stat-value">.975</p>
+                        <span class="stat-label">Team Fielding</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon players-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Active Players</h3>
+                        <p class="stat-value">25</p>
+                        <span class="stat-label">Roster Size</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Top Batters</h3>
+                    <table class="mini-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>AVG</th>
+                                <th>HR</th>
+                                <th>RBI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sample Player 1</td><td>.342</td><td>12</td><td>45</td></tr>
+                            <tr><td>Sample Player 2</td><td>.318</td><td>8</td><td>38</td></tr>
+                            <tr><td>Sample Player 3</td><td>.305</td><td>15</td><td>52</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Top Pitchers</h3>
+                    <table class="mini-table">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>ERA</th>
+                                <th>W-L</th>
+                                <th>K</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sample Pitcher 1</td><td>2.15</td><td>8-2</td><td>89</td></tr>
+                            <tr><td>Sample Pitcher 2</td><td>2.87</td><td>6-3</td><td>72</td></tr>
+                            <tr><td>Sample Pitcher 3</td><td>3.21</td><td>5-4</td><td>65</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="notice-banner">
+                <span class="notice-icon">ℹ️</span>
+                <p>Database connection pending. Displaying sample data for preview purposes.</p>
+            </div>
+        </section>
+
+        <!-- Players Section -->
+        <section id="players" class="section">
+            <div class="section-header">
+                <h2>Player Management</h2>
+                <p class="section-description">Add, edit, and manage your team roster</p>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="openModal('addPlayerModal')">
+                    <span class="btn-icon">+</span> Add New Player
+                </button>
+                <div class="search-box">
+                    <input type="text" placeholder="Search players..." id="playerSearch">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jersey #</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Year</th>
+                            <th>Bats/Throws</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playersTableBody">
+                        <tr>
+                            <td>1</td>
+                            <td>John Smith</td>
+                            <td>SS</td>
+                            <td>Junior</td>
+                            <td>R/R</td>
+                            <td><span class="status-badge active">Active</span></td>
+                            <td class="action-buttons">
+                                <button class="btn-icon-only" title="Edit">✏️</button>
+                                <button class="btn-icon-only" title="View Stats">📊</button>
+                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Mike Johnson</td>
+                            <td>P</td>
+                            <td>Senior</td>
+                            <td>L/L</td>
+                            <td><span class="status-badge active">Active</span></td>
+                            <td class="action-buttons">
+                                <button class="btn-icon-only" title="Edit">✏️</button>
+                                <button class="btn-icon-only" title="View Stats">📊</button>
+                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>24</td>
+                            <td>David Williams</td>
+                            <td>1B</td>
+                            <td>Sophomore</td>
+                            <td>L/R</td>
+                            <td><span class="status-badge injured">Injured</span></td>
+                            <td class="action-buttons">
+                                <button class="btn-icon-only" title="Edit">✏️</button>
+                                <button class="btn-icon-only" title="View Stats">📊</button>
+                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Batting Statistics Section -->
+        <section id="batting" class="section">
+            <div class="section-header">
+                <h2>Batting Statistics</h2>
+                <p class="section-description">Track and analyze batting performance</p>
+            </div>
+
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="battingStats">View Stats</button>
+                <button class="tab-btn" data-tab="battingEntry">Enter Stats</button>
+            </div>
+
+            <div id="battingStats" class="tab-content active">
+                <div class="filter-bar">
+                    <select id="battingSeasonFilter" class="filter-select">
+                        <option value="2026">2026 Season</option>
+                        <option value="2025">2025 Season</option>
+                        <option value="all">All Time</option>
+                    </select>
+                    <select id="battingGameFilter" class="filter-select">
+                        <option value="all">All Games</option>
+                        <option value="home">Home Games</option>
+                        <option value="away">Away Games</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table sortable">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>G</th>
+                                <th>AB</th>
+                                <th>R</th>
+                                <th>H</th>
+                                <th>2B</th>
+                                <th>3B</th>
+                                <th>HR</th>
+                                <th>RBI</th>
+                                <th>BB</th>
+                                <th>SO</th>
+                                <th>SB</th>
+                                <th>AVG</th>
+                                <th>OBP</th>
+                                <th>SLG</th>
+                            </tr>
+                        </thead>
+                        <tbody id="battingTableBody">
+                            <tr>
+                                <td>John Smith</td>
+                                <td>42</td>
+                                <td>168</td>
+                                <td>32</td>
+                                <td>54</td>
+                                <td>12</td>
+                                <td>2</td>
+                                <td>8</td>
+                                <td>35</td>
+                                <td>22</td>
+                                <td>28</td>
+                                <td>15</td>
+                                <td>.321</td>
+                                <td>.402</td>
+                                <td>.542</td>
+                            </tr>
+                            <tr>
+                                <td>Mike Johnson</td>
+                                <td>38</td>
+                                <td>145</td>
+                                <td>25</td>
+                                <td>42</td>
+                                <td>8</td>
+                                <td>1</td>
+                                <td>5</td>
+                                <td>28</td>
+                                <td>18</td>
+                                <td>35</td>
+                                <td>8</td>
+                                <td>.290</td>
+                                <td>.365</td>
+                                <td>.441</td>
+                            </tr>
+                            <tr>
+                                <td>David Williams</td>
+                                <td>35</td>
+                                <td>132</td>
+                                <td>22</td>
+                                <td>38</td>
+                                <td>10</td>
+                                <td>0</td>
+                                <td>12</td>
+                                <td>42</td>
+                                <td>25</td>
+                                <td>30</td>
+                                <td>2</td>
+                                <td>.288</td>
+                                <td>.385</td>
+                                <td>.561</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="battingEntry" class="tab-content">
+                <form class="stats-form" id="battingForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="battingPlayer">Player</label>
+                            <select id="battingPlayer" required>
+                                <option value="">Select Player</option>
+                                <option value="1">John Smith</option>
+                                <option value="2">Mike Johnson</option>
+                                <option value="3">David Williams</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="battingGame">Game</label>
+                            <select id="battingGame" required>
+                                <option value="">Select Game</option>
+                                <option value="1">vs Team A - 02/15/2026</option>
+                                <option value="2">vs Team B - 02/18/2026</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>At Bat Results</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="atBats">At Bats (AB)</label>
+                                <input type="number" id="atBats" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="runs">Runs (R)</label>
+                                <input type="number" id="runs" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="hits">Hits (H)</label>
+                                <input type="number" id="hits" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="doubles">Doubles (2B)</label>
+                                <input type="number" id="doubles" min="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="triples">Triples (3B)</label>
+                                <input type="number" id="triples" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="homeRuns">Home Runs (HR)</label>
+                                <input type="number" id="homeRuns" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="rbi">RBIs</label>
+                                <input type="number" id="rbi" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="walks">Walks (BB)</label>
+                                <input type="number" id="walks" min="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="strikeouts">Strikeouts (SO)</label>
+                                <input type="number" id="strikeouts" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="stolenBases">Stolen Bases (SB)</label>
+                                <input type="number" id="stolenBases" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="hitByPitch">Hit By Pitch (HBP)</label>
+                                <input type="number" id="hitByPitch" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="sacrifices">Sacrifices (SAC)</label>
+                                <input type="number" id="sacrifices" min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('battingForm')">Clear</button>
+                        <button type="submit" class="btn btn-primary">Save Statistics</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Pitching Statistics Section -->
+        <section id="pitching" class="section">
+            <div class="section-header">
+                <h2>Pitching Statistics</h2>
+                <p class="section-description">Track and analyze pitching performance</p>
+            </div>
+
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="pitchingStats">View Stats</button>
+                <button class="tab-btn" data-tab="pitchingEntry">Enter Stats</button>
+            </div>
+
+            <div id="pitchingStats" class="tab-content active">
+                <div class="filter-bar">
+                    <select id="pitchingSeasonFilter" class="filter-select">
+                        <option value="2026">2026 Season</option>
+                        <option value="2025">2025 Season</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table sortable">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>W</th>
+                                <th>L</th>
+                                <th>ERA</th>
+                                <th>G</th>
+                                <th>GS</th>
+                                <th>SV</th>
+                                <th>IP</th>
+                                <th>H</th>
+                                <th>R</th>
+                                <th>ER</th>
+                                <th>BB</th>
+                                <th>SO</th>
+                                <th>WHIP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pitchingTableBody">
+                            <tr>
+                                <td>Mike Johnson</td>
+                                <td>8</td>
+                                <td>2</td>
+                                <td>2.15</td>
+                                <td>15</td>
+                                <td>14</td>
+                                <td>0</td>
+                                <td>92.1</td>
+                                <td>72</td>
+                                <td>25</td>
+                                <td>22</td>
+                                <td>28</td>
+                                <td>89</td>
+                                <td>1.08</td>
+                            </tr>
+                            <tr>
+                                <td>Chris Davis</td>
+                                <td>6</td>
+                                <td>3</td>
+                                <td>2.87</td>
+                                <td>14</td>
+                                <td>12</td>
+                                <td>0</td>
+                                <td>78.2</td>
+                                <td>68</td>
+                                <td>28</td>
+                                <td>25</td>
+                                <td>22</td>
+                                <td>72</td>
+                                <td>1.14</td>
+                            </tr>
+                            <tr>
+                                <td>Tom Wilson</td>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>1.85</td>
+                                <td>22</td>
+                                <td>0</td>
+                                <td>8</td>
+                                <td>24.1</td>
+                                <td>18</td>
+                                <td>6</td>
+                                <td>5</td>
+                                <td>8</td>
+                                <td>32</td>
+                                <td>1.07</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="pitchingEntry" class="tab-content">
+                <form class="stats-form" id="pitchingForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pitchingPlayer">Player</label>
+                            <select id="pitchingPlayer" required>
+                                <option value="">Select Player</option>
+                                <option value="1">Mike Johnson</option>
+                                <option value="2">Chris Davis</option>
+                                <option value="3">Tom Wilson</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="pitchingGame">Game</label>
+                            <select id="pitchingGame" required>
+                                <option value="">Select Game</option>
+                                <option value="1">vs Team A - 02/15/2026</option>
+                                <option value="2">vs Team B - 02/18/2026</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Game Performance</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="decision">Decision</label>
+                                <select id="decision">
+                                    <option value="">No Decision</option>
+                                    <option value="W">Win</option>
+                                    <option value="L">Loss</option>
+                                    <option value="S">Save</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="gameStarted">Game Started</label>
+                                <select id="gameStarted">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inningsPitched">Innings Pitched</label>
+                                <input type="text" id="inningsPitched" placeholder="0.0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="hitsAllowed">Hits Allowed</label>
+                                <input type="number" id="hitsAllowed" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="runsAllowed">Runs Allowed</label>
+                                <input type="number" id="runsAllowed" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="earnedRuns">Earned Runs</label>
+                                <input type="number" id="earnedRuns" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="walksAllowed">Walks (BB)</label>
+                                <input type="number" id="walksAllowed" min="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="strikeoutsP">Strikeouts (K)</label>
+                                <input type="number" id="strikeoutsP" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="homeRunsAllowed">Home Runs Allowed</label>
+                                <input type="number" id="homeRunsAllowed" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="pitchCount">Pitch Count</label>
+                                <input type="number" id="pitchCount" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="strikes">Strikes</label>
+                                <input type="number" id="strikes" min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('pitchingForm')">Clear</button>
+                        <button type="submit" class="btn btn-primary">Save Statistics</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Fielding Statistics Section -->
+        <section id="fielding" class="section">
+            <div class="section-header">
+                <h2>Fielding Statistics</h2>
+                <p class="section-description">Track and analyze defensive performance</p>
+            </div>
+
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="fieldingStats">View Stats</button>
+                <button class="tab-btn" data-tab="fieldingEntry">Enter Stats</button>
+            </div>
+
+            <div id="fieldingStats" class="tab-content active">
+                <div class="filter-bar">
+                    <select id="fieldingSeasonFilter" class="filter-select">
+                        <option value="2026">2026 Season</option>
+                        <option value="2025">2025 Season</option>
+                        <option value="all">All Time</option>
+                    </select>
+                    <select id="positionFilter" class="filter-select">
+                        <option value="all">All Positions</option>
+                        <option value="C">Catcher</option>
+                        <option value="1B">First Base</option>
+                        <option value="2B">Second Base</option>
+                        <option value="3B">Third Base</option>
+                        <option value="SS">Shortstop</option>
+                        <option value="LF">Left Field</option>
+                        <option value="CF">Center Field</option>
+                        <option value="RF">Right Field</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table sortable">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>POS</th>
+                                <th>G</th>
+                                <th>TC</th>
+                                <th>PO</th>
+                                <th>A</th>
+                                <th>E</th>
+                                <th>DP</th>
+                                <th>FLD%</th>
+                                <th>PB</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fieldingTableBody">
+                            <tr>
+                                <td>John Smith</td>
+                                <td>SS</td>
+                                <td>42</td>
+                                <td>185</td>
+                                <td>82</td>
+                                <td>98</td>
+                                <td>5</td>
+                                <td>28</td>
+                                <td>.973</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>David Williams</td>
+                                <td>1B</td>
+                                <td>35</td>
+                                <td>320</td>
+                                <td>305</td>
+                                <td>12</td>
+                                <td>3</td>
+                                <td>35</td>
+                                <td>.991</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Alex Martinez</td>
+                                <td>C</td>
+                                <td>38</td>
+                                <td>285</td>
+                                <td>265</td>
+                                <td>18</td>
+                                <td>2</td>
+                                <td>5</td>
+                                <td>.993</td>
+                                <td>4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="fieldingEntry" class="tab-content">
+                <form class="stats-form" id="fieldingForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fieldingPlayer">Player</label>
+                            <select id="fieldingPlayer" required>
+                                <option value="">Select Player</option>
+                                <option value="1">John Smith</option>
+                                <option value="2">David Williams</option>
+                                <option value="3">Alex Martinez</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fieldingGame">Game</label>
+                            <select id="fieldingGame" required>
+                                <option value="">Select Game</option>
+                                <option value="1">vs Team A - 02/15/2026</option>
+                                <option value="2">vs Team B - 02/18/2026</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="positionPlayed">Position Played</label>
+                            <select id="positionPlayed" required>
+                                <option value="">Select Position</option>
+                                <option value="C">Catcher (C)</option>
+                                <option value="1B">First Base (1B)</option>
+                                <option value="2B">Second Base (2B)</option>
+                                <option value="3B">Third Base (3B)</option>
+                                <option value="SS">Shortstop (SS)</option>
+                                <option value="LF">Left Field (LF)</option>
+                                <option value="CF">Center Field (CF)</option>
+                                <option value="RF">Right Field (RF)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Fielding Performance</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="putouts">Putouts (PO)</label>
+                                <input type="number" id="putouts" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="assists">Assists (A)</label>
+                                <input type="number" id="assists" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="errors">Errors (E)</label>
+                                <input type="number" id="errors" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="doublePlays">Double Plays (DP)</label>
+                                <input type="number" id="doublePlays" min="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passedBalls">Passed Balls (PB) - Catchers Only</label>
+                                <input type="number" id="passedBalls" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="stolenBasesAllowed">Stolen Bases Allowed - Catchers Only</label>
+                                <input type="number" id="stolenBasesAllowed" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="catchersCaughtStealing">Caught Stealing - Catchers Only</label>
+                                <input type="number" id="catchersCaughtStealing" min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('fieldingForm')">Clear</button>
+                        <button type="submit" class="btn btn-primary">Save Statistics</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="section">
+            <div class="section-header">
+                <h2>Reports & Analysis</h2>
+                <p class="section-description">Generate comprehensive team and player reports</p>
+            </div>
+
+            <div class="reports-grid">
+                <div class="report-card">
+                    <div class="report-icon">📈</div>
+                    <h3>Season Summary</h3>
+                    <p>Complete overview of team performance for the selected season</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">👤</div>
+                    <h3>Player Card</h3>
+                    <p>Individual player statistics and performance analysis</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">📊</div>
+                    <h3>Game Log</h3>
+                    <p>Detailed breakdown of each game's performance</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">🏆</div>
+                    <h3>Leaderboards</h3>
+                    <p>Top performers in various statistical categories</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">📉</div>
+                    <h3>Trend Analysis</h3>
+                    <p>Track performance trends over time</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+                <div class="report-card">
+                    <div class="report-icon">🖨️</div>
+                    <h3>Printable Roster</h3>
+                    <p>Generate a print-ready team roster with stats</p>
+                    <button class="btn btn-outline" disabled>Generate Report</button>
+                </div>
+            </div>
+
+            <div class="notice-banner">
+                <span class="notice-icon">ℹ️</span>
+                <p>Reports will be available once the database is connected.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Player Modal -->
+    <div id="addPlayerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Player</h3>
+                <button class="modal-close" onclick="closeModal('addPlayerModal')">&times;</button>
+            </div>
+            <form class="modal-form" id="addPlayerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="playerJersey">Jersey Number</label>
+                        <input type="number" id="playerJersey" min="0" max="99" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerFirst">First Name</label>
+                        <input type="text" id="playerFirst" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerLast">Last Name</label>
+                        <input type="text" id="playerLast" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="playerPosition">Primary Position</label>
+                        <select id="playerPosition" required>
+                            <option value="">Select Position</option>
+                            <option value="P">Pitcher (P)</option>
+                            <option value="C">Catcher (C)</option>
+                            <option value="1B">First Base (1B)</option>
+                            <option value="2B">Second Base (2B)</option>
+                            <option value="3B">Third Base (3B)</option>
+                            <option value="SS">Shortstop (SS)</option>
+                            <option value="LF">Left Field (LF)</option>
+                            <option value="CF">Center Field (CF)</option>
+                            <option value="RF">Right Field (RF)</option>
+                            <option value="DH">Designated Hitter (DH)</option>
+                            <option value="UTIL">Utility</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerYear">Year</label>
+                        <select id="playerYear" required>
+                            <option value="">Select Year</option>
+                            <option value="Freshman">Freshman</option>
+                            <option value="Sophomore">Sophomore</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Graduate">Graduate</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="playerBats">Bats</label>
+                        <select id="playerBats" required>
+                            <option value="R">Right</option>
+                            <option value="L">Left</option>
+                            <option value="S">Switch</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerThrows">Throws</label>
+                        <select id="playerThrows" required>
+                            <option value="R">Right</option>
+                            <option value="L">Left</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="playerStatus">Status</label>
+                        <select id="playerStatus" required>
+                            <option value="active">Active</option>
+                            <option value="injured">Injured</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPlayerModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Player</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Baseball Statistics Manager</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
