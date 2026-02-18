@@ -11,10 +11,10 @@ This project will deliver a fully functional web application with the following 
 My motivation for this project stems from a passion for baseball and a desire to leverage my knowledge in computer science to enhance the analysis of player performance. By creating a web application that allows coaches to easily input and analyze statistics, I aim to provide a valuable tool that can help improve team performance and player development. In my personal experience as a baseball player and the son of a college coach, I have been asked before if I could create a tool to help with statistics, and this project is my attempt to test myself and fulfill that request. 
 ## Proposed Timeline
 - Week 1-3: Planning and Research
-    - Define project requirements and scope
-    - Research technologies and tools to be used
+    - ~~Define project requirements and scope~~
+    - ~~Research technologies and tools to be used~~
 - Week 4-5: User Interface Design and Setup
-    - Design the front-end interface
+    - ~~Design the front-end interface~~
     - Set up the project structure and development environment
 - Week 6-7: Database Design and Setup
     - Design the database schema
