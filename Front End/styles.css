@@ -833,6 +833,181 @@ body {
     }
 }
 
+/* ===== Team Selection Screen ===== */
+.team-select-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 40px 20px;
+}
+
+.team-select-overlay.active {
+    display: flex;
+}
+
+.team-select-container {
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+}
+
+.team-select-header {
+    color: white;
+    margin-bottom: 40px;
+}
+
+.team-select-header .team-select-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.team-select-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.team-select-header p {
+    font-size: 1.1rem;
+    opacity: 0.85;
+}
+
+.team-select-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.team-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 30px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    border: 3px solid transparent;
+}
+
+.team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-color);
+}
+
+.team-card.selected {
+    border-color: var(--success-color);
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.team-card-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+}
+
+.team-card h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.team-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.team-card.add-team-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+}
+
+.team-card.add-team-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.team-card.add-team-card .team-card-icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.team-card.add-team-card h3,
+.team-card.add-team-card p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* ===== Main App Container ===== */
+.main-app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-app-container.hidden {
+    display: none;
+}
+
+/* ===== Team Indicator in Header ===== */
+.team-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.team-indicator-name {
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.btn-change-team {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-change-team:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Updated Header Layout ===== */
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+}
+
+.main-nav {
+    margin-left: auto;
+}
+
 /* ===== Print Styles ===== */
 @media print {
     .main-header,
@@ -842,8 +1017,13 @@ body {
     .filter-bar,
     .form-actions,
     .action-buttons,
-    .notice-banner {
+    .notice-banner,
+    .team-select-overlay {
         display: none !important;
+    }
+    
+    .main-app-container.hidden {
+        display: block !important;
     }
     
     .section {
@@ -856,5 +1036,34 @@ body {
     
     .data-table {
         font-size: 10pt;
+    }
+}
+
+/* ===== Responsive: Team Selection ===== */
+@media (max-width: 768px) {
+    .team-select-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .team-select-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .team-indicator {
+        display: none;
+    }
+    
+    .header-content {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .team-select-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-card {
+        padding: 20px 16px;
     }
 }

@@ -9,25 +9,70 @@
     <script src="https://kit.fontawesome.com/d5f53039c9.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <!-- Navigation Header -->
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo">
-                <span class="logo-icon">⚾</span>
+    <!-- Team Selection Screen -->
+    <div id="teamSelectOverlay" class="team-select-overlay active">
+        <div class="team-select-container">
+            <div class="team-select-header">
+                <span class="team-select-icon">⚾</span>
                 <h1>Baseball Stats Manager</h1>
+                <p>Select a team to view and manage statistics</p>
             </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
-                    <li><a href="#players" class="nav-link" data-section="players">Players</a></li>
-                    <li><a href="#batting" class="nav-link" data-section="batting">Batting</a></li>
-                    <li><a href="#pitching" class="nav-link" data-section="pitching">Pitching</a></li>
-                    <li><a href="#fielding" class="nav-link" data-section="fielding">Fielding</a></li>
-                    <li><a href="#reports" class="nav-link" data-section="reports">Reports</a></li>
-                </ul>
-            </nav>
+            <div class="team-select-grid" id="teamSelectGrid">
+                <div class="team-card" data-team-id="1" data-team-name="New Paltz Hawks">
+                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
+                    <h3>New Paltz Hawks</h3>
+                    <p>Varsity Baseball</p>
+                </div>
+                <div class="team-card" data-team-id="2" data-team-name="Hudson Valley Tigers">
+                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
+                    <h3>Hudson Valley Tigers</h3>
+                    <p>Varsity Baseball</p>
+                </div>
+                <div class="team-card" data-team-id="3" data-team-name="Kingston Knights">
+                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
+                    <h3>Kingston Knights</h3>
+                    <p>Varsity Baseball</p>
+                </div>
+                <div class="team-card add-team-card" onclick="showAddTeamModal()">
+                    <div class="team-card-icon"><i class="fa-solid fa-plus"></i></div>
+                    <h3>Add New Team</h3>
+                    <p>Create a new team</p>
+                </div>
+            </div>
+            <div class="notice-banner" style="margin-top: 30px;">
+                <span class="notice-icon">ℹ️</span>
+                <p>Database connection pending. Displaying sample teams for preview purposes.</p>
+            </div>
         </div>
-    </header>
+    </div>
+
+    <!-- Main App Container (hidden until team selected) -->
+    <div id="mainAppContainer" class="main-app-container hidden">
+        <!-- Navigation Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">⚾</span>
+                    <h1>Baseball Stats Manager</h1>
+                </div>
+                <div class="team-indicator" id="teamIndicator">
+                    <span class="team-indicator-name">No Team Selected</span>
+                    <button class="btn btn-sm btn-change-team" onclick="changeTeam()">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> Change Team
+                    </button>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                        <li><a href="#players" class="nav-link" data-section="players">Players</a></li>
+                        <li><a href="#batting" class="nav-link" data-section="batting">Batting</a></li>
+                        <li><a href="#pitching" class="nav-link" data-section="pitching">Pitching</a></li>
+                        <li><a href="#fielding" class="nav-link" data-section="fielding">Fielding</a></li>
+                        <li><a href="#reports" class="nav-link" data-section="reports">Reports</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
 
     <main class="main-content">
         <!-- Dashboard Section -->
@@ -895,6 +940,50 @@
     <footer class="main-footer">
         <p>&copy; 2026 Baseball Statistics Manager</p>
     </footer>
+    </div><!-- End of mainAppContainer -->
+
+    <!-- Add Team Modal -->
+    <div id="addTeamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Team</h3>
+                <button class="modal-close" onclick="closeModal('addTeamModal')">&times;</button>
+            </div>
+            <form class="modal-form" id="addTeamForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teamName">Team Name</label>
+                        <input type="text" id="teamName" required placeholder="e.g., New Paltz Hawks">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teamLevel">Level</label>
+                        <select id="teamLevel" required>
+                            <option value="">Select Level</option>
+                            <option value="Varsity">Varsity</option>
+                            <option value="JV">Junior Varsity</option>
+                            <option value="Freshman">Freshman</option>
+                            <option value="Club">Club</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="teamSeason">Season</label>
+                        <select id="teamSeason" required>
+                            <option value="">Select Season</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addTeamModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
