@@ -1,0 +1,21 @@
+{
+  "name": "baseball_project",
+  "version": "1.0.0",
+  "description": "The goal of this project is to create a web application that allows users, presumably coaches, to input and analyze baseball statistics. The application will provide an interactive interface for users to view player stats for their fielding, batting, and pitching performance. The application will store the data in an external MySQL database, allowing for easy retrieval and analysis.\r ## Deliverables Expected\r This project will deliver a fully functional web application with the following features:\r 1. User Interface: A front-end web interface for inputting and viewing baseball statistics. Built using HTML, CSS, and JavaScript.\r 2. Database Integration: A database to store and manage the baseball statistics. Built using MySQL and integrated with the web application using node.\r 3. Data Analysis: Functionality to analyze and display player statistics in a meaningful way, such as calculating averages and totals.\r ## Motivation\r My motivation for this project stems from a passion for baseball and a desire to leverage my knowledge in computer science to enhance the analysis of player performance. By creating a web application that allows coaches to easily input and analyze statistics, I aim to provide a valuable tool that can help improve team performance and player development. In my personal experience as a baseball player and the son of a college coach, I have been asked before if I could create a tool to help with statistics, and this project is my attempt to test myself and fulfill that request. \r ## Proposed Timeline\r - Week 1-3: Planning and Research\r     - ~~Define project requirements and scope~~\r     - ~~Research technologies and tools to be used~~\r - Week 4-5: User Interface Design and Setup\r     - ~~Design the front-end interface~~\r     - Set up the project structure and development environment\r - Week 6-7: Database Design and Setup\r     - Design the database schema\r - Week 8-9: Implementation of Features\r     - Integrate the database with the web application\r     - Develop the functionality for inputting and viewing statistics\r     - Implement data validation and error handling\r - Week 10-11: Testing and Debugging\r     - Test the application for bugs and issues\r     - Debug and fix any problems\r - Week 12-13: Finalization and Deployment\r     - Finalize the application\r     - Deploy the web application to a hosting platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasonIngham24/Baseball-Statistics-Web-Application.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/JasonIngham24/Baseball-Statistics-Web-Application/issues"
+  },
+  "homepage": "https://github.com/JasonIngham24/Baseball-Statistics-Web-Application#readme"
+}
