@@ -6,6 +6,24 @@
 
 // ===== Global State =====
 let selectedTeam = null;
+let selectedGameForStats = null;
+
+// ===== Sample Games Data (placeholder for database) =====
+const sampleGamesData = {
+    1: [
+        { id: 1, date: '02/20/2026', opponent: 'Riverside Rebels', location: 'Home', result: 'W', teamScore: 7, opponentScore: 3 },
+        { id: 2, date: '02/18/2026', opponent: 'Mountain Eagles', location: 'Away', result: 'L', teamScore: 2, opponentScore: 5 },
+        { id: 3, date: '02/15/2026', opponent: 'Valley Storm', location: 'Home', result: 'W', teamScore: 9, opponentScore: 4 }
+    ],
+    2: [
+        { id: 1, date: '02/19/2026', opponent: 'River Rats', location: 'Home', result: 'W', teamScore: 5, opponentScore: 2 },
+        { id: 2, date: '02/16/2026', opponent: 'Hilltop Hornets', location: 'Away', result: 'W', teamScore: 8, opponentScore: 6 }
+    ],
+    3: [
+        { id: 1, date: '02/21/2026', opponent: 'Lakeside Lions', location: 'Home', result: 'L', teamScore: 3, opponentScore: 7 },
+        { id: 2, date: '02/17/2026', opponent: 'Coastal Crabs', location: 'Away', result: 'W', teamScore: 4, opponentScore: 1 }
+    ]
+};
 
 // ===== Sample Team Data (placeholder for database) =====
 const sampleTeamData = {
@@ -75,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initTabs();
     initForms();
     initSearch();
+    initGameStatsToggles();
     showDatabaseNotice();
 });
 
@@ -216,8 +235,12 @@ function loadTeamData(teamId) {
     // Update batting stats table
     updateBattingTable(teamData.battingStats);
 
-    // Update player dropdowns
-    updatePlayerDropdowns(teamData.players);
+    // Update player dropdowns (for game stats entry)
+    updateStatsPlayerDropdown(teamData.players);
+
+    // Update games table and dropdown
+    updateGamesTable(teamId);
+    updateGameDropdowns(teamId);
 }
 
 function updateDashboardStats(teamData) {
@@ -313,6 +336,70 @@ function updatePlayerDropdowns(players) {
     });
 }
 
+// Update the stats player dropdown in game stats entry
+function updateStatsPlayerDropdown(players) {
+    const dropdown = document.getElementById('statsPlayer');
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = '<option value="">-- Select Player --</option>';
+    
+    players.forEach(player => {
+        const option = document.createElement('option');
+        option.value = player.jersey;
+        option.textContent = `#${player.jersey} ${player.name} (${player.position})`;
+        dropdown.appendChild(option);
+    });
+}
+
+// Update games table with team-specific games
+function updateGamesTable(teamId) {
+    const tableBody = document.getElementById('gamesTableBody');
+    if (!tableBody) return;
+    
+    const games = sampleGamesData[teamId] || [];
+    
+    tableBody.innerHTML = '';
+    
+    games.forEach(game => {
+        const resultClass = game.result === 'W' ? 'win' : game.result === 'L' ? 'loss' : 'tie';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${game.date}</td>
+            <td>${game.opponent}</td>
+            <td>${game.location}</td>
+            <td><span class="result-badge ${resultClass}">${game.result}</span></td>
+            <td>${game.teamScore} - ${game.opponentScore}</td>
+            <td class="action-buttons">
+                <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(${game.id})">📊</button>
+                <button class="btn-icon-only" title="Edit" onclick="editGame(${game.id})">✏️</button>
+                <button class="btn-icon-only danger" title="Delete" onclick="deleteGame(${game.id})">🗑️</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    if (games.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No games recorded yet. Add a game to get started.</td></tr>';
+    }
+}
+
+// Update game dropdowns in the enter stats section
+function updateGameDropdowns(teamId) {
+    const dropdown = document.getElementById('selectGameForStats');
+    if (!dropdown) return;
+    
+    const games = sampleGamesData[teamId] || [];
+    
+    dropdown.innerHTML = '<option value="">-- Select a Game --</option>';
+    
+    games.forEach(game => {
+        const option = document.createElement('option');
+        option.value = game.id;
+        option.textContent = `${game.date} vs ${game.opponent} (${game.result} ${game.teamScore}-${game.opponentScore})`;
+        dropdown.appendChild(option);
+    });
+}
+
 // ===== Navigation Handling =====
 function initNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
@@ -371,30 +458,12 @@ function initTabs() {
 
 // ===== Form Handling =====
 function initForms() {
-    // Batting form
-    const battingForm = document.getElementById('battingForm');
-    if (battingForm) {
-        battingForm.addEventListener('submit', function(e) {
+    // Add Game form
+    const addGameForm = document.getElementById('addGameForm');
+    if (addGameForm) {
+        addGameForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            handleFormSubmit('batting', this);
-        });
-    }
-
-    // Pitching form
-    const pitchingForm = document.getElementById('pitchingForm');
-    if (pitchingForm) {
-        pitchingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleFormSubmit('pitching', this);
-        });
-    }
-
-    // Fielding form
-    const fieldingForm = document.getElementById('fieldingForm');
-    if (fieldingForm) {
-        fieldingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleFormSubmit('fielding', this);
+            handleAddGame(this);
         });
     }
 
@@ -406,6 +475,58 @@ function initForms() {
             handleAddPlayer(this);
         });
     }
+}
+
+// Handle adding a new game
+function handleAddGame(form) {
+    const gameDate = document.getElementById('gameDate').value;
+    const gameOpponent = document.getElementById('gameOpponent').value;
+    const gameLocation = document.getElementById('gameLocation').value;
+    const teamScore = document.getElementById('teamScore').value || '0';
+    const opponentScore = document.getElementById('opponentScore').value || '0';
+
+    if (!gameDate || !gameOpponent) {
+        showToast('Please fill in required fields.', 'error');
+        return;
+    }
+
+    // Determine result
+    let result = 'T';
+    if (parseInt(teamScore) > parseInt(opponentScore)) result = 'W';
+    else if (parseInt(teamScore) < parseInt(opponentScore)) result = 'L';
+
+    // Format date for display
+    const dateObj = new Date(gameDate);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+
+    console.log('New game data:', { gameDate: formattedDate, gameOpponent, gameLocation, teamScore, opponentScore, result });
+
+    // Add to table (UI only for now)
+    const tableBody = document.getElementById('gamesTableBody');
+    if (tableBody) {
+        const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${formattedDate}</td>
+            <td>${gameOpponent}</td>
+            <td>${gameLocation}</td>
+            <td><span class="result-badge ${resultClass}">${result}</span></td>
+            <td>${teamScore} - ${opponentScore}</td>
+            <td class="action-buttons">
+                <button class="btn-icon-only" title="View Details">📊</button>
+                <button class="btn-icon-only" title="Edit">✏️</button>
+                <button class="btn-icon-only danger" title="Delete">🗑️</button>
+            </td>
+        `;
+        tableBody.insertBefore(newRow, tableBody.firstChild);
+    }
+
+    showToast('Game added successfully! (Database pending)', 'success');
+    form.reset();
+
+    // Switch to games list tab
+    const gamesListBtn = document.querySelector('[data-tab="gamesList"]');
+    if (gamesListBtn) gamesListBtn.click();
 }
 
 // Handle form submissions (placeholder until database is connected)
@@ -611,6 +732,241 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// ===== Game Stats Entry Functions =====
+function initGameStatsToggles() {
+    // Toggle batting stats visibility
+    const playerBatted = document.getElementById('playerBatted');
+    if (playerBatted) {
+        playerBatted.addEventListener('change', function() {
+            const battingFields = document.getElementById('battingStatsFields');
+            if (battingFields) {
+                battingFields.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
+
+    // Toggle pitching stats visibility
+    const playerPitched = document.getElementById('playerPitched');
+    if (playerPitched) {
+        playerPitched.addEventListener('change', function() {
+            const pitchingFields = document.getElementById('pitchingStatsFields');
+            if (pitchingFields) {
+                pitchingFields.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
+
+    // Toggle fielding stats visibility
+    const playerFielded = document.getElementById('playerFielded');
+    if (playerFielded) {
+        playerFielded.addEventListener('change', function() {
+            const fieldingFields = document.getElementById('fieldingStatsFields');
+            if (fieldingFields) {
+                fieldingFields.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
+
+    // Show/hide catcher fields based on position
+    const positionSelect = document.getElementById('gs_pos');
+    if (positionSelect) {
+        positionSelect.addEventListener('change', function() {
+            const catcherFields = document.getElementById('catcherFields');
+            if (catcherFields) {
+                catcherFields.style.display = this.value === 'C' ? 'flex' : 'none';
+            }
+        });
+    }
+}
+
+// Load game for entering stats
+function loadGameForStats(gameId) {
+    selectedGameForStats = gameId;
+    
+    const gameStatsForm = document.getElementById('gameStatsForm');
+    if (!gameStatsForm) return;
+    
+    if (!gameId) {
+        gameStatsForm.style.display = 'none';
+        return;
+    }
+    
+    gameStatsForm.style.display = 'block';
+    clearGameStatsForm();
+    
+    showToast('Game selected. Choose a player to enter their stats.', 'info');
+}
+
+// Load existing stats for a player (placeholder)
+function loadPlayerGameStats() {
+    const playerId = document.getElementById('statsPlayer').value;
+    
+    if (!playerId) {
+        showToast('Please select a player first.', 'error');
+        return;
+    }
+    
+    if (!selectedGameForStats) {
+        showToast('Please select a game first.', 'error');
+        return;
+    }
+    
+    // This would load from database when connected
+    showToast('No existing stats found. Enter new stats for this player. (Database pending)', 'info');
+}
+
+// Save player game stats
+function savePlayerGameStats() {
+    const playerId = document.getElementById('statsPlayer').value;
+    
+    if (!playerId) {
+        showToast('Please select a player.', 'error');
+        return;
+    }
+    
+    if (!selectedGameForStats) {
+        showToast('Please select a game first.', 'error');
+        return;
+    }
+    
+    // Collect all stats data
+    const statsData = {
+        gameId: selectedGameForStats,
+        playerId: playerId,
+        batting: null,
+        pitching: null,
+        fielding: null
+    };
+    
+    // Batting stats
+    const playerBatted = document.getElementById('playerBatted');
+    if (playerBatted && playerBatted.checked) {
+        statsData.batting = {
+            ab: document.getElementById('gs_ab').value || 0,
+            r: document.getElementById('gs_r').value || 0,
+            h: document.getElementById('gs_h').value || 0,
+            doubles: document.getElementById('gs_2b').value || 0,
+            triples: document.getElementById('gs_3b').value || 0,
+            hr: document.getElementById('gs_hr').value || 0,
+            rbi: document.getElementById('gs_rbi').value || 0,
+            bb: document.getElementById('gs_bb').value || 0,
+            so: document.getElementById('gs_so').value || 0,
+            sb: document.getElementById('gs_sb').value || 0,
+            hbp: document.getElementById('gs_hbp').value || 0,
+            sac: document.getElementById('gs_sac').value || 0
+        };
+    }
+    
+    // Pitching stats
+    const playerPitched = document.getElementById('playerPitched');
+    if (playerPitched && playerPitched.checked) {
+        statsData.pitching = {
+            ip: document.getElementById('gs_ip').value || '0',
+            h: document.getElementById('gs_p_h').value || 0,
+            r: document.getElementById('gs_p_r').value || 0,
+            er: document.getElementById('gs_er').value || 0,
+            bb: document.getElementById('gs_p_bb').value || 0,
+            k: document.getElementById('gs_k').value || 0,
+            hr: document.getElementById('gs_p_hr').value || 0,
+            pitches: document.getElementById('gs_pitches').value || 0,
+            strikes: document.getElementById('gs_strikes').value || 0,
+            decision: document.getElementById('gs_decision').value || '',
+            gs: document.getElementById('gs_gs').value || '0'
+        };
+    }
+    
+    // Fielding stats
+    const playerFielded = document.getElementById('playerFielded');
+    if (playerFielded && playerFielded.checked) {
+        statsData.fielding = {
+            pos: document.getElementById('gs_pos').value || '',
+            po: document.getElementById('gs_po').value || 0,
+            a: document.getElementById('gs_a').value || 0,
+            e: document.getElementById('gs_e').value || 0,
+            dp: document.getElementById('gs_dp').value || 0,
+            pb: document.getElementById('gs_pb').value || 0,
+            sba: document.getElementById('gs_sba').value || 0,
+            cs: document.getElementById('gs_cs').value || 0
+        };
+    }
+    
+    console.log('Player game stats:', statsData);
+    
+    showToast('Player stats saved successfully! (Database pending)', 'success');
+    
+    // Clear form for next player
+    clearGameStatsForm();
+    document.getElementById('statsPlayer').value = '';
+}
+
+// Clear game stats form
+function clearGameStatsForm() {
+    // Reset batting fields
+    const battingFields = ['gs_ab', 'gs_r', 'gs_h', 'gs_2b', 'gs_3b', 'gs_hr', 'gs_rbi', 'gs_bb', 'gs_so', 'gs_sb', 'gs_hbp', 'gs_sac'];
+    battingFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '0';
+    });
+    
+    // Reset pitching fields
+    const pitchingFields = ['gs_p_h', 'gs_p_r', 'gs_er', 'gs_p_bb', 'gs_k', 'gs_p_hr', 'gs_pitches', 'gs_strikes'];
+    pitchingFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '0';
+    });
+    document.getElementById('gs_ip') && (document.getElementById('gs_ip').value = '');
+    document.getElementById('gs_decision') && (document.getElementById('gs_decision').value = '');
+    document.getElementById('gs_gs') && (document.getElementById('gs_gs').value = '0');
+    
+    // Reset fielding fields
+    const fieldingFields = ['gs_po', 'gs_a', 'gs_e', 'gs_dp', 'gs_pb', 'gs_sba', 'gs_cs'];
+    fieldingFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '0';
+    });
+    document.getElementById('gs_pos') && (document.getElementById('gs_pos').value = '');
+    
+    // Reset checkboxes to defaults
+    const playerBatted = document.getElementById('playerBatted');
+    const playerPitched = document.getElementById('playerPitched');
+    const playerFielded = document.getElementById('playerFielded');
+    
+    if (playerBatted) playerBatted.checked = true;
+    if (playerPitched) playerPitched.checked = false;
+    if (playerFielded) playerFielded.checked = true;
+    
+    // Reset visibility
+    const battingStatsFields = document.getElementById('battingStatsFields');
+    const pitchingStatsFields = document.getElementById('pitchingStatsFields');
+    const fieldingStatsFields = document.getElementById('fieldingStatsFields');
+    const catcherFields = document.getElementById('catcherFields');
+    
+    if (battingStatsFields) battingStatsFields.style.display = 'block';
+    if (pitchingStatsFields) pitchingStatsFields.style.display = 'none';
+    if (fieldingStatsFields) fieldingStatsFields.style.display = 'block';
+    if (catcherFields) catcherFields.style.display = 'none';
+}
+
+// View game details (placeholder)
+function viewGameDetails(gameId) {
+    showToast('Game details view will be available when database is connected.', 'info');
+    console.log('View game details:', gameId);
+}
+
+// Edit game (placeholder)
+function editGame(gameId) {
+    showToast('Game editing will be available when database is connected.', 'info');
+    console.log('Edit game:', gameId);
+}
+
+// Delete game (placeholder)
+function deleteGame(gameId) {
+    if (confirm('Are you sure you want to delete this game? All associated stats will also be deleted.')) {
+        showToast('Game deletion will be available when database is connected.', 'info');
+        console.log('Delete game:', gameId);
+    }
+}
 
 // ===== Toast Notifications =====
 function showToast(message, type = 'info') {
