@@ -13,10 +13,11 @@ My motivation for this project stems from a passion for baseball and a desire to
 - Week 1-3: Planning and Research
     - ~~Define project requirements and scope~~
     - ~~Research technologies and tools to be used~~
-- Week 4-5: User Interface Design and Setup
+- Week 4-6: User Interface Design and Setup
     - ~~Design the front-end interface~~
-    - Set up the project structure and development environment
-- Week 6-7: Database Design and Setup
+    - ~~Set up the project structure and development environment~~
+    - Update the front-end design based on feedback
+- Week 7: Database Design and Setup
     - Design the database schema
 - Week 8-9: Implementation of Features
     - Integrate the database with the web application
