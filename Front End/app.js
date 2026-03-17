@@ -41,6 +41,11 @@ const sampleTeamData = {
             { player: 'Mike Johnson', g: 38, ab: 145, r: 25, h: 42, doubles: 8, triples: 1, hr: 5, rbi: 28, bb: 18, so: 35, sb: 8, avg: '.290', obp: '.365', slg: '.441' },
             { player: 'David Williams', g: 35, ab: 132, r: 22, h: 38, doubles: 10, triples: 0, hr: 12, rbi: 42, bb: 25, so: 30, sb: 2, avg: '.288', obp: '.385', slg: '.561' }
         ],
+        pitchingStats: [
+            { player: 'Mike Johnson', era: '2.15', wl: '8-2', k: 89 },
+            { player: 'Chris Davis', era: '2.87', wl: '6-3', k: 72 },
+            { player: 'Tom Wilson', era: '3.21', wl: '5-4', k: 65 }
+        ],
         teamAvg: '.285',
         teamERA: '3.42',
         fieldingPct: '.975',
@@ -60,6 +65,11 @@ const sampleTeamData = {
             { player: 'Jake Thompson', g: 15, ab: 45, r: 5, h: 12, doubles: 2, triples: 0, hr: 1, rbi: 8, bb: 5, so: 15, sb: 0, avg: '.267', obp: '.340', slg: '.378' },
             { player: 'Ryan Lee', g: 38, ab: 140, r: 20, h: 42, doubles: 8, triples: 1, hr: 4, rbi: 28, bb: 15, so: 22, sb: 2, avg: '.300', obp: '.365', slg: '.443' }
         ],
+        pitchingStats: [
+            { player: 'Jake Thompson', era: '2.48', wl: '7-1', k: 81 },
+            { player: 'Liam Brooks', era: '2.95', wl: '5-3', k: 67 },
+            { player: 'Noah Perez', era: '3.12', wl: '2-2', k: 41 }
+        ],
         teamAvg: '.292',
         teamERA: '3.15',
         fieldingPct: '.982',
@@ -78,6 +88,11 @@ const sampleTeamData = {
             { player: 'Alex Brown', g: 38, ab: 150, r: 30, h: 50, doubles: 12, triples: 4, hr: 3, rbi: 25, bb: 24, so: 20, sb: 12, avg: '.333', obp: '.420', slg: '.493' },
             { player: 'Sam Wilson', g: 18, ab: 52, r: 6, h: 14, doubles: 3, triples: 0, hr: 2, rbi: 10, bb: 4, so: 18, sb: 0, avg: '.269', obp: '.321', slg: '.423' },
             { player: 'Tom Garcia', g: 30, ab: 110, r: 15, h: 30, doubles: 5, triples: 1, hr: 2, rbi: 18, bb: 10, so: 28, sb: 5, avg: '.273', obp: '.333', slg: '.382' }
+        ],
+        pitchingStats: [
+            { player: 'Sam Wilson', era: '2.76', wl: '6-4', k: 74 },
+            { player: 'Ethan Clark', era: '3.05', wl: '4-4', k: 59 },
+            { player: 'Mason Reed', era: '3.44', wl: '3-2', k: 48 }
         ],
         teamAvg: '.278',
         teamERA: '3.68',
@@ -228,6 +243,7 @@ function loadTeamData(teamId) {
 
     // Update dashboard stats
     updateDashboardStats(teamData);
+    updateDashboardLeaders(teamData);
 
     // Update players table
     updatePlayersTable(teamData.players);
@@ -243,17 +259,72 @@ function loadTeamData(teamId) {
     updateGameDropdowns(teamId);
 }
 
-function updateDashboardStats(teamData) {
-    // Update stat cards
-    const avgValue = document.querySelector('.stat-card:nth-child(1) .stat-value');
-    const eraValue = document.querySelector('.stat-card:nth-child(2) .stat-value');
-    const fldValue = document.querySelector('.stat-card:nth-child(3) .stat-value');
-    const playersValue = document.querySelector('.stat-card:nth-child(4) .stat-value');
+function updateDashboardLeaders(teamData) {
+    const topBattersBody = document.getElementById('topBattersTableBody');
+    const topPitchersBody = document.getElementById('topPitchersTableBody');
 
-    if (avgValue) avgValue.textContent = teamData.teamAvg;
-    if (eraValue) eraValue.textContent = teamData.teamERA;
-    if (fldValue) fldValue.textContent = teamData.fieldingPct;
-    if (playersValue) playersValue.textContent = teamData.activePlayerCount;
+    if (topBattersBody) {
+        const topBatters = [...(teamData.battingStats || [])]
+            .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg))
+            .slice(0, 3);
+
+        topBattersBody.innerHTML = '';
+
+        if (topBatters.length === 0) {
+            topBattersBody.innerHTML = '<tr><td colspan="4">No batting data available.</td></tr>';
+        } else {
+            topBatters.forEach(batter => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${batter.player}</td>
+                    <td>${batter.avg}</td>
+                    <td>${batter.hr}</td>
+                    <td>${batter.rbi}</td>
+                `;
+                topBattersBody.appendChild(row);
+            });
+        }
+    }
+
+    if (topPitchersBody) {
+        const topPitchers = [...(teamData.pitchingStats || [])]
+            .sort((a, b) => parseFloat(a.era) - parseFloat(b.era))
+            .slice(0, 3);
+
+        topPitchersBody.innerHTML = '';
+
+        if (topPitchers.length === 0) {
+            topPitchersBody.innerHTML = '<tr><td colspan="4">No pitching data available.</td></tr>';
+        } else {
+            topPitchers.forEach(pitcher => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pitcher.player}</td>
+                    <td>${pitcher.era}</td>
+                    <td>${pitcher.wl}</td>
+                    <td>${pitcher.k}</td>
+                `;
+                topPitchersBody.appendChild(row);
+            });
+        }
+    }
+}
+
+function updateDashboardStats(teamData) {
+    const avgValue = document.getElementById('dashboardTeamAvg');
+    const eraValue = document.getElementById('dashboardTeamERA');
+    const fldValue = document.getElementById('dashboardFieldingPct');
+    const playersValue = document.getElementById('dashboardActivePlayers');
+
+    if (avgValue) avgValue.textContent = teamData.teamAvg || '.000';
+    if (eraValue) eraValue.textContent = teamData.teamERA || '0.00';
+    if (fldValue) fldValue.textContent = teamData.fieldingPct || '.000';
+    if (playersValue) {
+        const activePlayers = Array.isArray(teamData.players)
+            ? teamData.players.filter(player => player.status === 'active').length
+            : 0;
+        playersValue.textContent = activePlayers;
+    }
 }
 
 function updatePlayersTable(players) {
