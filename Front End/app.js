@@ -110,7 +110,35 @@ document.addEventListener('DOMContentLoaded', function() {
     initSearch();
     initGameStatsToggles();
     showDatabaseNotice();
+    initHamburgerMenu();
 });
+
+// ===== Hamburger Menu =====
+function initHamburgerMenu() {
+    const hamburgerBtn = document.querySelector('.hamburger-menu');
+    const mainNav = document.querySelector('.main-nav');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    if (hamburgerBtn && mainNav) {
+        hamburgerBtn.addEventListener('click', () => {
+            mainNav.classList.toggle('mobile-open');
+            const isOpen = mainNav.classList.contains('mobile-open');
+            hamburgerBtn.innerHTML = isOpen ? '<i class="fa-solid fa-times"></i>' : '<i class="fa-solid fa-bars"></i>';
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+    }
+
+    // Close menu when a link is clicked
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (mainNav.classList.contains('mobile-open')) {
+                mainNav.classList.remove('mobile-open');
+                hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                document.body.style.overflow = '';
+            }
+        });
+    });
+}
 
 // ===== Team Selection =====
 function initTeamSelection() {

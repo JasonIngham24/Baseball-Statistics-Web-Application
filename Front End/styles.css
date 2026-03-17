@@ -103,10 +103,26 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.nav-link.active {
+.main-nav.active {
     color: white;
     background-color: rgba(255, 255, 255, 0.15);
     border-bottom-color: var(--accent-color);
+}
+
+.hamburger-menu {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.nav-change-team-item {
+    display: none;
+    padding: 15px 20px;
+    text-align: center;
+    border-top: 1px solid var(--primary-light);
 }
 
 /* ===== Main Content ===== */
@@ -732,8 +748,53 @@ body {
     font-size: 0.9rem;
 }
 
+
 /* ===== Responsive Design ===== */
 @media (max-width: 1024px) {
+    .main-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--primary-dark);
+        flex-direction: column;
+        padding: 10px 0;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .main-nav.mobile-open {
+        display: flex;
+    }
+
+    .main-nav ul {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+
+    .main-nav .nav-link {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--primary-light);
+        text-align: center;
+    }
+
+    .main-nav .nav-link.active {
+        background-color: var(--primary-light);
+        border-bottom-color: var(--primary-light);
+    }
+
+    .hamburger-menu {
+        display: block;
+    }
+
+    .nav-change-team-item {
+        display: block;
+        padding: 15px 20px;
+        text-align: center;
+        border-top: 1px solid var(--primary-light);
+    }
+
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
@@ -741,7 +802,9 @@ body {
 
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
         padding: 10px 20px;
     }
     
@@ -749,15 +812,13 @@ body {
         padding: 10px 0;
     }
     
-    .main-nav ul {
-        flex-wrap: wrap;
-        justify-content: center;
-        padding-bottom: 10px;
-    }
-    
-    .nav-link {
-        padding: 10px 14px;
-        font-size: 0.85rem;
+    .team-indicator {
+        order: 3;
+        width: 100%;
+        margin: 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .stats-overview {

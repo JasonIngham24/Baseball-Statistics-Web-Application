@@ -58,7 +58,7 @@
                 </div>
                 <div class="team-indicator" id="teamIndicator">
                     <span class="team-indicator-name">No Team Selected</span>
-                    <button class="btn btn-sm btn-change-team" onclick="changeTeam()">
+                    <button class="btn btn-sm btn-change-team desktop-change-team" onclick="changeTeam()">
                         <i class="fa-solid fa-arrow-right-arrow-left"></i> Change Team
                     </button>
                 </div>
@@ -71,8 +71,16 @@
                         <li><a href="#pitching" class="nav-link" data-section="pitching">Pitching</a></li>
                         <li><a href="#fielding" class="nav-link" data-section="fielding">Fielding</a></li>
                         <li><a href="#reports" class="nav-link" data-section="reports">Reports</a></li>
+                        <li class="nav-change-team-item">
+                            <button class="btn btn-sm btn-change-team" onclick="changeTeam()">
+                                <i class="fa-solid fa-arrow-right-arrow-left"></i> Change Team
+                            </button>
+                        </li>
                     </ul>
                 </nav>
+                <button class="hamburger-menu" aria-label="Open navigation menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
         </header>
 
