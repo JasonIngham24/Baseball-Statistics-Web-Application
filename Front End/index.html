@@ -58,7 +58,7 @@
                 </div>
                 <div class="team-indicator" id="teamIndicator">
                     <span class="team-indicator-name">No Team Selected</span>
-                    <button class="btn btn-sm btn-change-team" onclick="changeTeam()">
+                    <button class="btn btn-sm btn-change-team desktop-change-team" onclick="changeTeam()">
                         <i class="fa-solid fa-arrow-right-arrow-left"></i> Change Team
                     </button>
                 </div>
@@ -71,8 +71,16 @@
                         <li><a href="#pitching" class="nav-link" data-section="pitching">Pitching</a></li>
                         <li><a href="#fielding" class="nav-link" data-section="fielding">Fielding</a></li>
                         <li><a href="#reports" class="nav-link" data-section="reports">Reports</a></li>
+                        <li class="nav-change-team-item">
+                            <button class="btn btn-sm btn-change-team" onclick="changeTeam()">
+                                <i class="fa-solid fa-arrow-right-arrow-left"></i> Change Team
+                            </button>
+                        </li>
                     </ul>
                 </nav>
+                <button class="hamburger-menu" aria-label="Open navigation menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
         </header>
 
@@ -91,7 +99,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Team Batting Avg</h3>
-                        <p class="stat-value">.285</p>
+                        <p class="stat-value" id="dashboardTeamAvg">.285</p>
                         <span class="stat-label">Season Average</span>
                     </div>
                 </div>
@@ -101,7 +109,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Team ERA</h3>
-                        <p class="stat-value">3.42</p>
+                        <p class="stat-value" id="dashboardTeamERA">3.42</p>
                         <span class="stat-label">Earned Run Average</span>
                     </div>
                 </div>
@@ -111,7 +119,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Fielding %</h3>
-                        <p class="stat-value">.975</p>
+                        <p class="stat-value" id="dashboardFieldingPct">.975</p>
                         <span class="stat-label">Team Fielding</span>
                     </div>
                 </div>
@@ -121,7 +129,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Active Players</h3>
-                        <p class="stat-value">25</p>
+                        <p class="stat-value" id="dashboardActivePlayers">25</p>
                         <span class="stat-label">Roster Size</span>
                     </div>
                 </div>
@@ -139,7 +147,7 @@
                                 <th>RBI</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="topBattersTableBody">
                             <tr><td>Sample Player 1</td><td>.342</td><td>12</td><td>45</td></tr>
                             <tr><td>Sample Player 2</td><td>.318</td><td>8</td><td>38</td></tr>
                             <tr><td>Sample Player 3</td><td>.305</td><td>15</td><td>52</td></tr>
@@ -157,7 +165,7 @@
                                 <th>K</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="topPitchersTableBody">
                             <tr><td>Sample Pitcher 1</td><td>2.15</td><td>8-2</td><td>89</td></tr>
                             <tr><td>Sample Pitcher 2</td><td>2.87</td><td>6-3</td><td>72</td></tr>
                             <tr><td>Sample Pitcher 3</td><td>3.21</td><td>5-4</td><td>65</td></tr>

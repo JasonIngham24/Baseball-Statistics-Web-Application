@@ -41,6 +41,11 @@ const sampleTeamData = {
             { player: 'Mike Johnson', g: 38, ab: 145, r: 25, h: 42, doubles: 8, triples: 1, hr: 5, rbi: 28, bb: 18, so: 35, sb: 8, avg: '.290', obp: '.365', slg: '.441' },
             { player: 'David Williams', g: 35, ab: 132, r: 22, h: 38, doubles: 10, triples: 0, hr: 12, rbi: 42, bb: 25, so: 30, sb: 2, avg: '.288', obp: '.385', slg: '.561' }
         ],
+        pitchingStats: [
+            { player: 'Mike Johnson', era: '2.15', wl: '8-2', k: 89 },
+            { player: 'Chris Davis', era: '2.87', wl: '6-3', k: 72 },
+            { player: 'Tom Wilson', era: '3.21', wl: '5-4', k: 65 }
+        ],
         teamAvg: '.285',
         teamERA: '3.42',
         fieldingPct: '.975',
@@ -59,6 +64,11 @@ const sampleTeamData = {
             { player: 'Chris Martinez', g: 40, ab: 155, r: 28, h: 48, doubles: 10, triples: 3, hr: 6, rbi: 32, bb: 20, so: 25, sb: 18, avg: '.310', obp: '.390', slg: '.510' },
             { player: 'Jake Thompson', g: 15, ab: 45, r: 5, h: 12, doubles: 2, triples: 0, hr: 1, rbi: 8, bb: 5, so: 15, sb: 0, avg: '.267', obp: '.340', slg: '.378' },
             { player: 'Ryan Lee', g: 38, ab: 140, r: 20, h: 42, doubles: 8, triples: 1, hr: 4, rbi: 28, bb: 15, so: 22, sb: 2, avg: '.300', obp: '.365', slg: '.443' }
+        ],
+        pitchingStats: [
+            { player: 'Jake Thompson', era: '2.48', wl: '7-1', k: 81 },
+            { player: 'Liam Brooks', era: '2.95', wl: '5-3', k: 67 },
+            { player: 'Noah Perez', era: '3.12', wl: '2-2', k: 41 }
         ],
         teamAvg: '.292',
         teamERA: '3.15',
@@ -79,6 +89,11 @@ const sampleTeamData = {
             { player: 'Sam Wilson', g: 18, ab: 52, r: 6, h: 14, doubles: 3, triples: 0, hr: 2, rbi: 10, bb: 4, so: 18, sb: 0, avg: '.269', obp: '.321', slg: '.423' },
             { player: 'Tom Garcia', g: 30, ab: 110, r: 15, h: 30, doubles: 5, triples: 1, hr: 2, rbi: 18, bb: 10, so: 28, sb: 5, avg: '.273', obp: '.333', slg: '.382' }
         ],
+        pitchingStats: [
+            { player: 'Sam Wilson', era: '2.76', wl: '6-4', k: 74 },
+            { player: 'Ethan Clark', era: '3.05', wl: '4-4', k: 59 },
+            { player: 'Mason Reed', era: '3.44', wl: '3-2', k: 48 }
+        ],
         teamAvg: '.278',
         teamERA: '3.68',
         fieldingPct: '.968',
@@ -95,7 +110,35 @@ document.addEventListener('DOMContentLoaded', function() {
     initSearch();
     initGameStatsToggles();
     showDatabaseNotice();
+    initHamburgerMenu();
 });
+
+// ===== Hamburger Menu =====
+function initHamburgerMenu() {
+    const hamburgerBtn = document.querySelector('.hamburger-menu');
+    const mainNav = document.querySelector('.main-nav');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    if (hamburgerBtn && mainNav) {
+        hamburgerBtn.addEventListener('click', () => {
+            mainNav.classList.toggle('mobile-open');
+            const isOpen = mainNav.classList.contains('mobile-open');
+            hamburgerBtn.innerHTML = isOpen ? '<i class="fa-solid fa-times"></i>' : '<i class="fa-solid fa-bars"></i>';
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+    }
+
+    // Close menu when a link is clicked
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (mainNav.classList.contains('mobile-open')) {
+                mainNav.classList.remove('mobile-open');
+                hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                document.body.style.overflow = '';
+            }
+        });
+    });
+}
 
 // ===== Team Selection =====
 function initTeamSelection() {
@@ -228,6 +271,7 @@ function loadTeamData(teamId) {
 
     // Update dashboard stats
     updateDashboardStats(teamData);
+    updateDashboardLeaders(teamData);
 
     // Update players table
     updatePlayersTable(teamData.players);
@@ -243,17 +287,72 @@ function loadTeamData(teamId) {
     updateGameDropdowns(teamId);
 }
 
-function updateDashboardStats(teamData) {
-    // Update stat cards
-    const avgValue = document.querySelector('.stat-card:nth-child(1) .stat-value');
-    const eraValue = document.querySelector('.stat-card:nth-child(2) .stat-value');
-    const fldValue = document.querySelector('.stat-card:nth-child(3) .stat-value');
-    const playersValue = document.querySelector('.stat-card:nth-child(4) .stat-value');
+function updateDashboardLeaders(teamData) {
+    const topBattersBody = document.getElementById('topBattersTableBody');
+    const topPitchersBody = document.getElementById('topPitchersTableBody');
 
-    if (avgValue) avgValue.textContent = teamData.teamAvg;
-    if (eraValue) eraValue.textContent = teamData.teamERA;
-    if (fldValue) fldValue.textContent = teamData.fieldingPct;
-    if (playersValue) playersValue.textContent = teamData.activePlayerCount;
+    if (topBattersBody) {
+        const topBatters = [...(teamData.battingStats || [])]
+            .sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg))
+            .slice(0, 3);
+
+        topBattersBody.innerHTML = '';
+
+        if (topBatters.length === 0) {
+            topBattersBody.innerHTML = '<tr><td colspan="4">No batting data available.</td></tr>';
+        } else {
+            topBatters.forEach(batter => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${batter.player}</td>
+                    <td>${batter.avg}</td>
+                    <td>${batter.hr}</td>
+                    <td>${batter.rbi}</td>
+                `;
+                topBattersBody.appendChild(row);
+            });
+        }
+    }
+
+    if (topPitchersBody) {
+        const topPitchers = [...(teamData.pitchingStats || [])]
+            .sort((a, b) => parseFloat(a.era) - parseFloat(b.era))
+            .slice(0, 3);
+
+        topPitchersBody.innerHTML = '';
+
+        if (topPitchers.length === 0) {
+            topPitchersBody.innerHTML = '<tr><td colspan="4">No pitching data available.</td></tr>';
+        } else {
+            topPitchers.forEach(pitcher => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${pitcher.player}</td>
+                    <td>${pitcher.era}</td>
+                    <td>${pitcher.wl}</td>
+                    <td>${pitcher.k}</td>
+                `;
+                topPitchersBody.appendChild(row);
+            });
+        }
+    }
+}
+
+function updateDashboardStats(teamData) {
+    const avgValue = document.getElementById('dashboardTeamAvg');
+    const eraValue = document.getElementById('dashboardTeamERA');
+    const fldValue = document.getElementById('dashboardFieldingPct');
+    const playersValue = document.getElementById('dashboardActivePlayers');
+
+    if (avgValue) avgValue.textContent = teamData.teamAvg || '.000';
+    if (eraValue) eraValue.textContent = teamData.teamERA || '0.00';
+    if (fldValue) fldValue.textContent = teamData.fieldingPct || '.000';
+    if (playersValue) {
+        const activePlayers = Array.isArray(teamData.players)
+            ? teamData.players.filter(player => player.status === 'active').length
+            : 0;
+        playersValue.textContent = activePlayers;
+    }
 }
 
 function updatePlayersTable(players) {
@@ -479,6 +578,11 @@ function initForms() {
 
 // Handle adding a new game
 function handleAddGame(form) {
+    if (!selectedTeam || !selectedTeam.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
     const gameDate = document.getElementById('gameDate').value;
     const gameOpponent = document.getElementById('gameOpponent').value;
     const gameLocation = document.getElementById('gameLocation').value;
@@ -499,27 +603,28 @@ function handleAddGame(form) {
     const dateObj = new Date(gameDate);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
-    console.log('New game data:', { gameDate: formattedDate, gameOpponent, gameLocation, teamScore, opponentScore, result });
-
-    // Add to table (UI only for now)
-    const tableBody = document.getElementById('gamesTableBody');
-    if (tableBody) {
-        const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>${formattedDate}</td>
-            <td>${gameOpponent}</td>
-            <td>${gameLocation}</td>
-            <td><span class="result-badge ${resultClass}">${result}</span></td>
-            <td>${teamScore} - ${opponentScore}</td>
-            <td class="action-buttons">
-                <button class="btn-icon-only" title="View Details">📊</button>
-                <button class="btn-icon-only" title="Edit">✏️</button>
-                <button class="btn-icon-only danger" title="Delete">🗑️</button>
-            </td>
-        `;
-        tableBody.insertBefore(newRow, tableBody.firstChild);
+    const teamId = selectedTeam.id;
+    if (!sampleGamesData[teamId]) {
+        sampleGamesData[teamId] = [];
     }
+
+    const currentGames = sampleGamesData[teamId];
+    const maxExistingId = currentGames.reduce((maxId, game) => Math.max(maxId, game.id), 0);
+    const newGame = {
+        id: maxExistingId + 1,
+        date: formattedDate,
+        opponent: gameOpponent,
+        location: gameLocation,
+        result,
+        teamScore: parseInt(teamScore, 10),
+        opponentScore: parseInt(opponentScore, 10)
+    };
+
+    currentGames.unshift(newGame);
+    console.log('New game data:', newGame);
+
+    updateGamesTable(teamId);
+    updateGameDropdowns(teamId);
 
     showToast('Game added successfully! (Database pending)', 'success');
     form.reset();
@@ -963,8 +1068,36 @@ function editGame(gameId) {
 // Delete game (placeholder)
 function deleteGame(gameId) {
     if (confirm('Are you sure you want to delete this game? All associated stats will also be deleted.')) {
-        showToast('Game deletion will be available when database is connected.', 'info');
-        console.log('Delete game:', gameId);
+        if (!selectedTeam || !selectedTeam.id) {
+            showToast('Please select a team first.', 'error');
+            return;
+        }
+
+        const teamId = selectedTeam.id;
+        const games = sampleGamesData[teamId] || [];
+        const gameIndex = games.findIndex(game => game.id === gameId);
+
+        if (gameIndex === -1) {
+            showToast('Game not found.', 'error');
+            return;
+        }
+
+        const [deletedGame] = games.splice(gameIndex, 1);
+
+        if (String(selectedGameForStats) === String(gameId)) {
+            selectedGameForStats = null;
+
+            const gameSelect = document.getElementById('selectGameForStats');
+            const gameStatsForm = document.getElementById('gameStatsForm');
+            if (gameSelect) gameSelect.value = '';
+            if (gameStatsForm) gameStatsForm.style.display = 'none';
+        }
+
+        updateGamesTable(teamId);
+        updateGameDropdowns(teamId);
+
+        showToast(`Deleted game vs ${deletedGame.opponent}. Changes are local and reset on refresh.`, 'success');
+        console.log('Deleted game:', deletedGame);
     }
 }
 
