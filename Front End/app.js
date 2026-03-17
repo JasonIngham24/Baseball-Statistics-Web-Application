@@ -550,6 +550,11 @@ function initForms() {
 
 // Handle adding a new game
 function handleAddGame(form) {
+    if (!selectedTeam || !selectedTeam.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
     const gameDate = document.getElementById('gameDate').value;
     const gameOpponent = document.getElementById('gameOpponent').value;
     const gameLocation = document.getElementById('gameLocation').value;
@@ -570,27 +575,28 @@ function handleAddGame(form) {
     const dateObj = new Date(gameDate);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
-    console.log('New game data:', { gameDate: formattedDate, gameOpponent, gameLocation, teamScore, opponentScore, result });
-
-    // Add to table (UI only for now)
-    const tableBody = document.getElementById('gamesTableBody');
-    if (tableBody) {
-        const resultClass = result === 'W' ? 'win' : result === 'L' ? 'loss' : 'tie';
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>${formattedDate}</td>
-            <td>${gameOpponent}</td>
-            <td>${gameLocation}</td>
-            <td><span class="result-badge ${resultClass}">${result}</span></td>
-            <td>${teamScore} - ${opponentScore}</td>
-            <td class="action-buttons">
-                <button class="btn-icon-only" title="View Details">📊</button>
-                <button class="btn-icon-only" title="Edit">✏️</button>
-                <button class="btn-icon-only danger" title="Delete">🗑️</button>
-            </td>
-        `;
-        tableBody.insertBefore(newRow, tableBody.firstChild);
+    const teamId = selectedTeam.id;
+    if (!sampleGamesData[teamId]) {
+        sampleGamesData[teamId] = [];
     }
+
+    const currentGames = sampleGamesData[teamId];
+    const maxExistingId = currentGames.reduce((maxId, game) => Math.max(maxId, game.id), 0);
+    const newGame = {
+        id: maxExistingId + 1,
+        date: formattedDate,
+        opponent: gameOpponent,
+        location: gameLocation,
+        result,
+        teamScore: parseInt(teamScore, 10),
+        opponentScore: parseInt(opponentScore, 10)
+    };
+
+    currentGames.unshift(newGame);
+    console.log('New game data:', newGame);
+
+    updateGamesTable(teamId);
+    updateGameDropdowns(teamId);
 
     showToast('Game added successfully! (Database pending)', 'success');
     form.reset();
@@ -1034,8 +1040,36 @@ function editGame(gameId) {
 // Delete game (placeholder)
 function deleteGame(gameId) {
     if (confirm('Are you sure you want to delete this game? All associated stats will also be deleted.')) {
-        showToast('Game deletion will be available when database is connected.', 'info');
-        console.log('Delete game:', gameId);
+        if (!selectedTeam || !selectedTeam.id) {
+            showToast('Please select a team first.', 'error');
+            return;
+        }
+
+        const teamId = selectedTeam.id;
+        const games = sampleGamesData[teamId] || [];
+        const gameIndex = games.findIndex(game => game.id === gameId);
+
+        if (gameIndex === -1) {
+            showToast('Game not found.', 'error');
+            return;
+        }
+
+        const [deletedGame] = games.splice(gameIndex, 1);
+
+        if (String(selectedGameForStats) === String(gameId)) {
+            selectedGameForStats = null;
+
+            const gameSelect = document.getElementById('selectGameForStats');
+            const gameStatsForm = document.getElementById('gameStatsForm');
+            if (gameSelect) gameSelect.value = '';
+            if (gameStatsForm) gameStatsForm.style.display = 'none';
+        }
+
+        updateGamesTable(teamId);
+        updateGameDropdowns(teamId);
+
+        showToast(`Deleted game vs ${deletedGame.opponent}. Changes are local and reset on refresh.`, 'success');
+        console.log('Deleted game:', deletedGame);
     }
 }
 
