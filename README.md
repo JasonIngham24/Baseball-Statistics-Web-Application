@@ -18,7 +18,7 @@ My motivation for this project stems from a passion for baseball and a desire to
     - ~~Set up the project structure and development environment~~
     - Update the front-end design based on feedback
 - Week 7: Database Design and Setup
-    - Design the database schema
+    - ~~Design the database schema~~
 - Week 8-9: Implementation of Features
     - Integrate the database with the web application
     - Develop the functionality for inputting and viewing statistics
