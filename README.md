@@ -29,3 +29,5 @@ My motivation for this project stems from a passion for baseball and a desire to
 - Week 12-13: Finalization and Deployment
     - Finalize the application
     - Deploy the web application to a hosting platform
+## Database Model
+![Database E-R Model](/Images/Baseball%20Stats%20Manager%20E-R%20Model.png "Database E-R Model")
