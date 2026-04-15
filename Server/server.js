@@ -46,17 +46,27 @@ function calculateWHIP(walksAllowed, hitsAllowed, inningsPitched) {
   return ((walksAllowed + hitsAllowed) / inningsPitched).toFixed(3);
 }
 
+function normalizePitchDecision(decision) {
+  const value = String(decision || '').trim().toLowerCase();
+  if (value === 'w' || value === 'win') return 'win';
+  if (value === 'l' || value === 'loss') return 'loss';
+  if (value === 's' || value === 'save') return 'save';
+  if (value === 'h' || value === 'hold') return 'hold';
+  return value;
+}
+
 async function loadTeamSummary(teamId) {
   const [teamRows] = await db.query('SELECT * FROM TEAMS WHERE TeamID = ?', [teamId]);
   if (!teamRows.length) return null;
 
+  const teamName = teamRows[0].TeamName;
   const [allTeams] = await db.query('SELECT TeamID, TeamName FROM TEAMS');
   const teamNameById = new Map(allTeams.map(team => [String(team.TeamID), team.TeamName]));
 
   const [playerRows] = await db.query('SELECT * FROM PLAYERS WHERE TeamID = ? ORDER BY JerseyNumber, LastName, FirstName', [teamId]);
   const [gameRows] = await db.query(
     'SELECT * FROM GAMES WHERE HomeTeamID = ? OR AwayTeamID = ? ORDER BY GameDate DESC, GameID DESC',
-    [teamId, teamId]
+    [teamId, teamName]
   );
 
   const [battingRows] = await db.query(
@@ -84,7 +94,18 @@ async function loadTeamSummary(teamId) {
      FROM FIELDING_STATS fs
      JOIN PLAYERS p ON p.PlayerID = fs.PlayerID
      JOIN GAMES g ON g.GameID = fs.GameID
-     WHERE p.TeamID = ?`,
+     WHERE p.TeamID = ?
+     ORDER BY p.LastName, p.FirstName, g.GameDate DESC, g.GameID DESC`,
+    [teamId]
+  );
+
+  const [catchingRows] = await db.query(
+    `SELECT cs.*, p.FirstName, p.LastName
+     FROM CATCHING_STATS cs
+     JOIN PLAYERS p ON p.PlayerID = cs.PlayerID
+     JOIN GAMES g ON g.GameID = cs.GameID
+     WHERE p.TeamID = ?
+     ORDER BY p.LastName, p.FirstName, g.GameDate DESC, g.GameID DESC`,
     [teamId]
   );
 
@@ -135,6 +156,8 @@ async function loadTeamSummary(teamId) {
         playerId,
         player: fullName(row.FirstName, row.LastName),
         g: 0,
+        gs: 0,
+        sv: 0,
         ip: 0,
         h: 0,
         r: 0,
@@ -149,6 +172,8 @@ async function loadTeamSummary(teamId) {
 
     const entry = pitchingByPlayer.get(playerId);
     entry.g += 1;
+    entry.gs += row.PitcherStarted ? 1 : 0;
+    entry.sv += normalizePitchDecision(row.Decision) === 'save' ? 1 : 0;
     entry.ip += Number(row.InningsPitched || 0);
     entry.h += Number(row.HitsAllowed || 0);
     entry.r += Number(row.RunsAllowed || 0);
@@ -156,8 +181,9 @@ async function loadTeamSummary(teamId) {
     entry.bb += Number(row.WalksAllowed || 0);
     entry.k += Number(row.Strikeouts || 0);
     entry.hr += Number(row.HomeRunsAllowed || 0);
-    if ((row.Decision || '').toLowerCase() === 'win') entry.wins += 1;
-    if ((row.Decision || '').toLowerCase() === 'loss') entry.losses += 1;
+    const normalizedDecision = normalizePitchDecision(row.Decision);
+    if (normalizedDecision === 'win') entry.wins += 1;
+    if (normalizedDecision === 'loss') entry.losses += 1;
   }
 
   const fieldingByPlayer = new Map();
@@ -165,16 +191,45 @@ async function loadTeamSummary(teamId) {
     const playerId = row.PlayerID;
     if (!fieldingByPlayer.has(playerId)) {
       fieldingByPlayer.set(playerId, {
+        playerId,
+        player: fullName(row.FirstName, row.LastName),
+        position: row.Position || '',
+        g: 0,
+        tc: 0,
         putouts: 0,
         assists: 0,
-        errors: 0
+        errors: 0,
+        doublePlays: 0
       });
     }
 
     const entry = fieldingByPlayer.get(playerId);
+    entry.g += 1;
+    if (!entry.position && row.Position) {
+      entry.position = row.Position;
+    }
     entry.putouts += Number(row.Putouts || 0);
     entry.assists += Number(row.Assists || 0);
     entry.errors += Number(row.Errors || 0);
+    entry.doublePlays += Number(row.DoublePlays || 0);
+    entry.tc += Number(row.Putouts || 0) + Number(row.Assists || 0) + Number(row.Errors || 0);
+  }
+
+  const catchingByPlayer = new Map();
+  for (const row of catchingRows) {
+    const playerId = row.PlayerID;
+    if (!catchingByPlayer.has(playerId)) {
+      catchingByPlayer.set(playerId, {
+        passedBalls: 0,
+        stolenBasesAllowed: 0,
+        caughtStealing: 0
+      });
+    }
+
+    const entry = catchingByPlayer.get(playerId);
+    entry.passedBalls += Number(row.PassedBalls || 0);
+    entry.stolenBasesAllowed += Number(row.StolenBasesAllowed || 0);
+    entry.caughtStealing += Number(row.CaughtStealing || 0);
   }
 
   const players = playerRows.map(player => ({
@@ -204,10 +259,46 @@ async function loadTeamSummary(teamId) {
     return {
       playerId: entry.playerId,
       player: entry.player,
+      g: entry.g,
+      gs: entry.gs,
+      sv: entry.sv,
+      ip: Number(entry.ip.toFixed(1)),
+      h: entry.h,
+      r: entry.r,
+      er: entry.er,
+      bb: entry.bb,
+      so: entry.k,
+      wins: entry.wins,
+      losses: entry.losses,
       era,
       wl,
       k: entry.k,
       whip: calculateWHIP(entry.bb, entry.h, entry.ip)
+    };
+  });
+
+  const fieldingStats = Array.from(fieldingByPlayer.values()).map(entry => {
+    const catching = catchingByPlayer.get(entry.playerId) || {
+      passedBalls: 0,
+      stolenBasesAllowed: 0,
+      caughtStealing: 0
+    };
+    const fieldingPct = entry.tc ? ((entry.putouts + entry.assists) / entry.tc).toFixed(3).slice(1) : '1.000';
+
+    return {
+      playerId: entry.playerId,
+      player: entry.player,
+      position: entry.position,
+      g: entry.g,
+      tc: entry.tc,
+      po: entry.putouts,
+      a: entry.assists,
+      e: entry.errors,
+      dp: entry.doublePlays,
+      fldPct: fieldingPct,
+      pb: catching.passedBalls,
+      sba: catching.stolenBasesAllowed,
+      cs: catching.caughtStealing
     };
   });
 
@@ -265,6 +356,7 @@ async function loadTeamSummary(teamId) {
     players,
     battingStats,
     pitchingStats,
+    fieldingStats,
     games,
     summary
   };
@@ -291,6 +383,16 @@ app.get('/api/teams/:teamId/summary', async (req, res) => {
     res.json(summary);
   } catch (error) {
     res.status(500).json({ error: 'Failed to load team summary' });
+  }
+});
+
+app.get('/api/teams/:teamId/fielding', async (req, res) => {
+  try {
+    const summary = await loadTeamSummary(req.params.teamId);
+    if (!summary) return res.status(404).json({ error: 'Team not found' });
+    res.json(summary.fieldingStats || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load fielding stats' });
   }
 });
 
@@ -338,7 +440,7 @@ app.delete('/api/teams/:teamId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid team id' });
     }
 
-    const [teamRows] = await connection.query('SELECT TeamID FROM TEAMS WHERE TeamID = ?', [teamId]);
+    const [teamRows] = await connection.query('SELECT TeamID, TeamName FROM TEAMS WHERE TeamID = ?', [teamId]);
     if (!teamRows.length) {
       return res.status(404).json({ error: 'Team not found' });
     }
@@ -356,9 +458,10 @@ app.delete('/api/teams/:teamId', async (req, res) => {
       await connection.query(`DELETE FROM PLAYERS WHERE PlayerID IN (${playerIds.map(() => '?').join(',')})`, playerIds);
     }
 
+    const teamName = teamRows[0].TeamName;
     const [gameRows] = await connection.query(
       'SELECT GameID FROM GAMES WHERE HomeTeamID = ? OR AwayTeamID = ?',
-      [teamId, teamId]
+      [teamId, teamName]
     );
     const gameIds = gameRows.map(row => row.GameID);
 
@@ -396,7 +499,7 @@ app.post('/api/players', async (req, res) => {
       playerStatus
     } = req.body;
 
-    if (!teamId || !jerseyNumber || !firstName || !lastName || !position || !playerYear || !batStance || !throwStance || !playerStatus) {
+    if (!teamId || !jerseyNumber || !firstName || !lastName || !email || !position || !playerYear || !batStance || !throwStance || !playerStatus) {
       return res.status(400).json({ error: 'Missing required player fields' });
     }
 
@@ -469,7 +572,7 @@ app.post('/api/games', async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO GAMES (GameDate, GameLocation, HomeScore, AwayScore, HomeTeamID, AwayTeamID) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO GAMES (GameDate, GameLocation, HomeScore, AwayString(awayTeamId)eTeamID, AwayTeamID) VALUES (?, ?, ?, ?, ?, ?)',
       [gameDate, gameLocation, homeScore, awayScore, homeTeamId, awayTeamId]
     );
 
@@ -483,7 +586,7 @@ app.put('/api/games/:gameId', async (req, res) => {
   try {
     const { gameDate, gameLocation, homeScore, awayScore, homeTeamId, awayTeamId } = req.body;
     await db.query(
-      'UPDATE GAMES SET GameDate = ?, GameLocation = ?, HomeScore = ?, AwayScore = ?, HomeTeamID = ?, AwayTeamID = ? WHERE GameID = ?',
+      'UPDATE GAMES SET GameDate = ?, GameLocation = ?, HomeScoreString(awayTeamId)Score = ?, HomeTeamID = ?, AwayTeamID = ? WHERE GameID = ?',
       [gameDate, gameLocation, homeScore, awayScore, homeTeamId, awayTeamId, req.params.gameId]
     );
     res.json({ success: true });

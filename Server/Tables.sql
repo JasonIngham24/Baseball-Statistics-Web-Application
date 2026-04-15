@@ -24,12 +24,11 @@ CREATE TABLE IF NOT EXISTS GAMES (
     GameID INTEGER PRIMARY KEY AUTO_INCREMENT,
     GameDate DATE NOT NULL,
     GameLocation varchar(255) NOT NULL,
+    AwayTeamID varchar(255) NOT NULL,
     HomeScore INTEGER NOT NULL,
     AwayScore INTEGER NOT NULL,
     HomeTeamID INTEGER NOT NULL,
-    AwayTeamID INTEGER NOT NULL,
-    FOREIGN KEY (HomeTeamID) REFERENCES TEAMS(TeamID) ON DELETE CASCADE,
-    FOREIGN KEY (AwayTeamID) REFERENCES TEAMS(TeamID) ON DELETE CASCADE
+    FOREIGN KEY (HomeTeamID) REFERENCES TEAMS(TeamID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS BATTING_STATS (
@@ -117,9 +116,9 @@ INSERT INTO PLAYERS (PlayerID, JerseyNumber, FirstName, LastName, Email, Positio
     (8, 27, 'Owen', 'James', 'owen.james@example.com', 'C', 'Junior', 'R', 'R', 'Active', 3);
 
 INSERT INTO GAMES (GameID, GameDate, GameLocation, HomeScore, AwayScore, HomeTeamID, AwayTeamID) VALUES
-    (1, '2026-03-15', 'New Paltz Field', 6, 4, 1, 2),
-    (2, '2026-03-22', 'Hudson Valley Park', 3, 5, 2, 3),
-    (3, '2026-03-29', 'Capital City Stadium', 2, 7, 3, 1);
+    (1, '2026-03-15', 'New Paltz Field', 6, 4, 1, 'Hudson Valley Bears'),
+    (2, '2026-03-22', 'Hudson Valley Park', 3, 5, 2, 'Capital City Knights'),
+    (3, '2026-03-29', 'Capital City Stadium', 2, 7, 3, 'New Paltz Hawks');
 
 INSERT INTO BATTING_STATS (PlayerID, GameID, AtBats, Runs, Hits, Doubles, Triples, HomeRuns, RBIs, Walks, Strikeouts, StolenBases, HitByPitch, Sacrifice, BattingAverage, OnBasePercentage, SluggingPercentage) VALUES
     (1, 1, 4, 2, 3, 1, 0, 0, 2, 0, 1, 1, 0, 0, 0.750, 0.750, 1.000),

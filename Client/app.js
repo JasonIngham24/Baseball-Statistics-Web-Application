@@ -290,7 +290,10 @@ async function handleAddTeam(form) {
 
 async function loadTeamData(teamId) {
     try {
-        const response = await apiRequest(`/teams/${teamId}/summary`);
+        const [response, fieldingStats] = await Promise.all([
+            apiRequest(`/teams/${teamId}/summary`),
+            apiRequest(`/teams/${teamId}/fielding`)
+        ]);
         const teamData = {
             id: response.team.teamId,
             name: response.team.name,
@@ -299,6 +302,7 @@ async function loadTeamData(teamId) {
             players: response.players || [],
             battingStats: response.battingStats || [],
             pitchingStats: response.pitchingStats || [],
+            fieldingStats: fieldingStats || response.fieldingStats || [],
             games: response.games || [],
             teamAvg: response.summary?.teamAvg || '.000',
             teamERA: response.summary?.teamERA || '0.00',
@@ -312,6 +316,8 @@ async function loadTeamData(teamId) {
         updateDashboardLeaders(teamData);
         updatePlayersTable(teamData.players);
         updateBattingTable(teamData.battingStats);
+        updatePitchingTable(teamData.pitchingStats);
+        updateFieldingTable(teamData.fieldingStats);
         updateStatsPlayerDropdown(teamData.players);
         updateGamesTable(teamId);
         updateGameDropdowns(teamId);
@@ -334,6 +340,7 @@ async function populateOpponentTeams(teamId) {
             .forEach(team => {
                 const option = document.createElement('option');
                 option.value = team.teamId;
+                option.dataset.teamName = team.name;
                 option.textContent = `${team.name} (${team.level})`;
                 opponentSelect.appendChild(option);
             });
@@ -446,6 +453,11 @@ function updateBattingTable(battingStats) {
 
     tableBody.innerHTML = '';
 
+    if (!Array.isArray(battingStats) || battingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 30px; color: var(--text-secondary);">No batting data available.</td></tr>';
+        return;
+    }
+
     battingStats.forEach(stat => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -467,6 +479,77 @@ function updateBattingTable(battingStats) {
         `;
         tableBody.appendChild(row);
     });
+}
+
+function updatePitchingTable(pitchingStats) {
+    const tableBody = document.getElementById('pitchingTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(pitchingStats) || pitchingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 30px; color: var(--text-secondary);">No pitching data available.</td></tr>';
+        return;
+    }
+
+    pitchingStats.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.player}</td>
+            <td>${stat.wins ?? 0}</td>
+            <td>${stat.losses ?? 0}</td>
+            <td>${stat.era}</td>
+            <td>${stat.g ?? 0}</td>
+            <td>${stat.gs ?? 0}</td>
+            <td>${stat.sv ?? 0}</td>
+            <td>${formatInningsPitched(stat.ip)}</td>
+            <td>${stat.h ?? 0}</td>
+            <td>${stat.r ?? 0}</td>
+            <td>${stat.er ?? 0}</td>
+            <td>${stat.bb ?? 0}</td>
+            <td>${stat.so ?? stat.k ?? 0}</td>
+            <td>${stat.whip}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function updateFieldingTable(fieldingStats) {
+    const tableBody = document.getElementById('fieldingTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(fieldingStats) || fieldingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-secondary);">No fielding data available.</td></tr>';
+        return;
+    }
+
+    fieldingStats.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.player}</td>
+            <td>${stat.position || '—'}</td>
+            <td>${stat.g ?? 0}</td>
+            <td>${stat.tc ?? 0}</td>
+            <td>${stat.po ?? 0}</td>
+            <td>${stat.a ?? 0}</td>
+            <td>${stat.e ?? 0}</td>
+            <td>${stat.dp ?? 0}</td>
+            <td>${stat.fldPct || '.000'}</td>
+            <td>${stat.pb ?? 0}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function formatInningsPitched(innings) {
+    const value = Number.parseFloat(innings);
+    if (!Number.isFinite(value)) {
+        return '0.0';
+    }
+
+    return value.toFixed(1);
 }
 
 function updatePlayerDropdowns(players) {
@@ -651,30 +734,32 @@ async function handleAddGame(form) {
         return;
     }
 
-    // Determine result
-    let result = 'T';
-    if (parseInt(teamScore) > parseInt(opponentScore)) result = 'W';
-    else if (parseInt(teamScore) < parseInt(opponentScore)) result = 'L';
-
     try {
+        const opponentSelect = document.getElementById('gameOpponent');
+        const opponentOption = opponentSelect?.selectedOptions?.[0];
         const opponentTeamId = Number(gameOpponent);
+        const opponentTeamName = opponentOption?.dataset?.teamName || '';
         const selectedTeamId = Number(selectedTeam.id);
+        const selectedTeamName = selectedTeam.name;
 
-        if (!opponentTeamId) {
+        if (!opponentTeamId || !opponentTeamName) {
             showToast('Please choose an opponent team.', 'error');
             return;
         }
 
-        const homeTeamId = gameLocation === 'Away' ? opponentTeamId : selectedTeamId;
-        const awayTeamId = gameLocation === 'Away' ? selectedTeamId : opponentTeamId;
+        const isAwayGame = gameLocation === 'Away';
+        const homeTeamId = isAwayGame ? opponentTeamId : selectedTeamId;
+        const awayTeamId = isAwayGame ? selectedTeamName : opponentTeamName;
+        const homeScore = isAwayGame ? parseInt(opponentScore, 10) : parseInt(teamScore, 10);
+        const awayScore = isAwayGame ? parseInt(teamScore, 10) : parseInt(opponentScore, 10);
 
         await apiRequest('/games', {
             method: 'POST',
             body: JSON.stringify({
                 gameDate,
                 gameLocation,
-                homeScore: parseInt(teamScore, 10),
-                awayScore: parseInt(opponentScore, 10),
+                homeScore,
+                awayScore,
                 homeTeamId,
                 awayTeamId
             })
@@ -726,7 +811,7 @@ async function handleAddPlayer(form) {
                 jerseyNumber: document.getElementById('playerJersey').value,
                 firstName: document.getElementById('playerFirst').value,
                 lastName: document.getElementById('playerLast').value,
-                email: '',
+                email: document.getElementById('playerEmail').value,
                 position: document.getElementById('playerPosition').value,
                 playerYear: document.getElementById('playerYear').value,
                 batStance: document.getElementById('playerBats').value,
@@ -1201,7 +1286,6 @@ async function editGame(gameId) {
         return;
     }
 
-    const teamId = Number(selectedTeam.id);
     const game = getTeamGames(selectedTeam.id).find(g => String(g.gameId || g.id) === String(gameId));
     if (!game) {
         showToast('Game not found.', 'error');
@@ -1223,9 +1307,10 @@ async function editGame(gameId) {
     }
 
     const homeTeamId = Number(game.homeTeamId);
-    const awayTeamId = Number(game.awayTeamId);
-    const homeScore = homeTeamId === teamId ? parsedTeamScore : parsedOpponentScore;
-    const awayScore = awayTeamId === teamId ? parsedTeamScore : parsedOpponentScore;
+    const isAwayGame = String(game.location).toLowerCase() === 'away';
+    const homeScore = isAwayGame ? parsedOpponentScore : parsedTeamScore;
+    const awayScore = isAwayGame ? parsedTeamScore : parsedOpponentScore;
+    const awayTeamId = isAwayGame ? selectedTeam.name : game.opponent;
 
     const isoDate = game.gameDateISO || new Date(game.date).toISOString().slice(0, 10);
 
