@@ -84,7 +84,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Team Batting Avg</h3>
-                        <p class="stat-value" id="dashboardTeamAvg">.285</p>
+                        <p class="stat-value" id="dashboardTeamAvg">.000</p>
                         <span class="stat-label">Season Average</span>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Team ERA</h3>
-                        <p class="stat-value" id="dashboardTeamERA">3.42</p>
+                        <p class="stat-value" id="dashboardTeamERA">0.00</p>
                         <span class="stat-label">Earned Run Average</span>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Fielding %</h3>
-                        <p class="stat-value" id="dashboardFieldingPct">.975</p>
+                        <p class="stat-value" id="dashboardFieldingPct">.000</p>
                         <span class="stat-label">Team Fielding</span>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
                     </div>
                     <div class="stat-info">
                         <h3>Active Players</h3>
-                        <p class="stat-value" id="dashboardActivePlayers">25</p>
+                        <p class="stat-value" id="dashboardActivePlayers">0</p>
                         <span class="stat-label">Roster Size</span>
                     </div>
                 </div>
@@ -159,6 +159,16 @@
                 <span class="notice-icon">ℹ️</span>
                 <p>All dashboard values are loaded from the database.</p>
             </div>
+
+            <div class="dashboard-actions danger-zone">
+                <div>
+                    <h3>Danger Zone</h3>
+                    <p>Delete the current team, all of its players, player stats, and any games it appears in.</p>
+                </div>
+                <button type="button" class="btn btn-danger" onclick="openDeleteTeamModal()">
+                    Delete Team
+                </button>
+            </div>
         </section>
 
         <!-- Players Section -->
@@ -192,8 +202,8 @@
                         </tr>
                     </thead>
                     <tbody id="playersTableBody">
-                        <tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-secondary);">No players loaded yet.</td></tr>
-                    </tbody>
+                            <tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-secondary);">No player data available.</td></tr>
+                        </tbody>
                 </table>
             </div>
         </section>
@@ -238,7 +248,7 @@
                             </tr>
                         </thead>
                         <tbody id="gamesTableBody">
-                            <tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No games recorded yet. Add a game to get started.</td></tr>
+                            <tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No game data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -568,57 +578,7 @@
                             </tr>
                         </thead>
                         <tbody id="battingTableBody">
-                            <tr>
-                                <td>John Smith</td>
-                                <td>42</td>
-                                <td>168</td>
-                                <td>32</td>
-                                <td>54</td>
-                                <td>12</td>
-                                <td>2</td>
-                                <td>8</td>
-                                <td>35</td>
-                                <td>22</td>
-                                <td>28</td>
-                                <td>15</td>
-                                <td>.321</td>
-                                <td>.402</td>
-                                <td>.542</td>
-                            </tr>
-                            <tr>
-                                <td>Mike Johnson</td>
-                                <td>38</td>
-                                <td>145</td>
-                                <td>25</td>
-                                <td>42</td>
-                                <td>8</td>
-                                <td>1</td>
-                                <td>5</td>
-                                <td>28</td>
-                                <td>18</td>
-                                <td>35</td>
-                                <td>8</td>
-                                <td>.290</td>
-                                <td>.365</td>
-                                <td>.441</td>
-                            </tr>
-                            <tr>
-                                <td>David Williams</td>
-                                <td>35</td>
-                                <td>132</td>
-                                <td>22</td>
-                                <td>38</td>
-                                <td>10</td>
-                                <td>0</td>
-                                <td>12</td>
-                                <td>42</td>
-                                <td>25</td>
-                                <td>30</td>
-                                <td>2</td>
-                                <td>.288</td>
-                                <td>.385</td>
-                                <td>.561</td>
-                            </tr>
+                            <tr><td colspan="15" style="text-align: center; padding: 30px; color: var(--text-secondary);">No batting data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -666,54 +626,7 @@
                             </tr>
                         </thead>
                         <tbody id="pitchingTableBody">
-                            <tr>
-                                <td>Mike Johnson</td>
-                                <td>8</td>
-                                <td>2</td>
-                                <td>2.15</td>
-                                <td>15</td>
-                                <td>14</td>
-                                <td>0</td>
-                                <td>92.1</td>
-                                <td>72</td>
-                                <td>25</td>
-                                <td>22</td>
-                                <td>28</td>
-                                <td>89</td>
-                                <td>1.08</td>
-                            </tr>
-                            <tr>
-                                <td>Chris Davis</td>
-                                <td>6</td>
-                                <td>3</td>
-                                <td>2.87</td>
-                                <td>14</td>
-                                <td>12</td>
-                                <td>0</td>
-                                <td>78.2</td>
-                                <td>68</td>
-                                <td>28</td>
-                                <td>25</td>
-                                <td>22</td>
-                                <td>72</td>
-                                <td>1.14</td>
-                            </tr>
-                            <tr>
-                                <td>Tom Wilson</td>
-                                <td>0</td>
-                                <td>1</td>
-                                <td>1.85</td>
-                                <td>22</td>
-                                <td>0</td>
-                                <td>8</td>
-                                <td>24.1</td>
-                                <td>18</td>
-                                <td>6</td>
-                                <td>5</td>
-                                <td>8</td>
-                                <td>32</td>
-                                <td>1.07</td>
-                            </tr>
+                            <tr><td colspan="14" style="text-align: center; padding: 30px; color: var(--text-secondary);">No pitching data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -769,42 +682,7 @@
                             </tr>
                         </thead>
                         <tbody id="fieldingTableBody">
-                            <tr>
-                                <td>John Smith</td>
-                                <td>SS</td>
-                                <td>42</td>
-                                <td>185</td>
-                                <td>82</td>
-                                <td>98</td>
-                                <td>5</td>
-                                <td>28</td>
-                                <td>.973</td>
-                                <td>-</td>
-                            </tr>
-                            <tr>
-                                <td>David Williams</td>
-                                <td>1B</td>
-                                <td>35</td>
-                                <td>320</td>
-                                <td>305</td>
-                                <td>12</td>
-                                <td>3</td>
-                                <td>35</td>
-                                <td>.991</td>
-                                <td>-</td>
-                            </tr>
-                            <tr>
-                                <td>Alex Martinez</td>
-                                <td>C</td>
-                                <td>38</td>
-                                <td>285</td>
-                                <td>265</td>
-                                <td>18</td>
-                                <td>2</td>
-                                <td>5</td>
-                                <td>.993</td>
-                                <td>4</td>
-                            </tr>
+                            <tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-secondary);">No fielding data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1004,6 +882,26 @@
                     <button type="submit" class="btn btn-primary">Create Team</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Team Modal -->
+    <div id="deleteTeamModal" class="modal delete-team-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Team</h3>
+                <button class="modal-close" onclick="closeModal('deleteTeamModal')">&times;</button>
+            </div>
+            <div class="modal-form delete-team-body">
+                <div class="delete-team-warning">
+                    <strong>This action cannot be undone.</strong>
+                    <p>Deleting <span id="deleteTeamName">this team</span> will permanently remove the team, all players on that team, their stats, and any games involving the team.</p>
+                </div>
+                <div class="form-actions delete-team-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('deleteTeamModal')">Cancel</button>
+                    <button type="button" id="confirmDeleteTeamButton" class="btn btn-danger" onclick="confirmDeleteTeam()">Yes, Delete Team</button>
+                </div>
+            </div>
         </div>
     </div>
 

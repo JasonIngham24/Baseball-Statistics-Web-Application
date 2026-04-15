@@ -333,7 +333,16 @@ app.put('/api/teams/:teamId', async (req, res) => {
 app.delete('/api/teams/:teamId', async (req, res) => {
   const connection = await db.getConnection();
   try {
-    const teamId = req.params.teamId;
+    const teamId = Number(req.params.teamId);
+    if (!Number.isInteger(teamId)) {
+      return res.status(400).json({ error: 'Invalid team id' });
+    }
+
+    const [teamRows] = await connection.query('SELECT TeamID FROM TEAMS WHERE TeamID = ?', [teamId]);
+    if (!teamRows.length) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
     await connection.beginTransaction();
 
     const [playerRows] = await connection.query('SELECT PlayerID FROM PLAYERS WHERE TeamID = ?', [teamId]);

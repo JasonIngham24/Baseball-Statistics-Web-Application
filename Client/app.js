@@ -68,12 +68,12 @@ async function loadTeamCardsFromDatabase() {
 
     try {
         const teams = await apiRequest('/teams');
-        if (!Array.isArray(teams) || teams.length === 0) return;
-
         teamGrid.innerHTML = '';
-        teams.forEach(team => {
-            teamGrid.appendChild(createTeamCardElement(team));
-        });
+        if (Array.isArray(teams) && teams.length > 0) {
+            teams.forEach(team => {
+                teamGrid.appendChild(createTeamCardElement(team));
+            });
+        }
 
         if (addTeamCard) {
             teamGrid.appendChild(addTeamCard);
@@ -164,10 +164,21 @@ function selectTeam(teamId, teamName) {
 }
 
 function changeTeam() {
+    selectedTeam = null;
+    selectedGameForStats = null;
+
     // Show team selection overlay
     const overlay = document.getElementById('teamSelectOverlay');
     if (overlay) {
         overlay.classList.add('active');
+    }
+
+    const teamIndicator = document.getElementById('teamIndicator');
+    if (teamIndicator) {
+        const nameNode = teamIndicator.querySelector('.team-indicator-name');
+        if (nameNode) {
+            nameNode.textContent = 'No Team Selected';
+        }
     }
 
     // Hide main app
@@ -190,6 +201,51 @@ function changeTeam() {
 
 function showAddTeamModal() {
     openModal('addTeamModal');
+}
+
+function openDeleteTeamModal() {
+    if (!selectedTeam?.id || !selectedTeam?.name) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const teamName = document.getElementById('deleteTeamName');
+    if (teamName) {
+        teamName.textContent = selectedTeam.name;
+    }
+
+    const deleteButton = document.getElementById('confirmDeleteTeamButton');
+    if (deleteButton) {
+        deleteButton.setAttribute('data-team-id', selectedTeam.id);
+    }
+
+    openModal('deleteTeamModal');
+}
+
+async function confirmDeleteTeam() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const teamId = selectedTeam.id;
+    const teamName = selectedTeam.name;
+
+    try {
+        await apiRequest(`/teams/${teamId}`, { method: 'DELETE' });
+
+        delete loadedTeamData[teamId];
+        selectedTeam = null;
+        selectedGameForStats = null;
+
+        closeModal('deleteTeamModal');
+        changeTeam();
+        await loadTeamCardsFromDatabase();
+
+        showToast(`Team "${teamName}" deleted.`, 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to delete team.', 'error');
+    }
 }
 
 async function handleAddTeam(form) {
@@ -479,7 +535,7 @@ function updateGamesTable(teamId) {
     });
     
     if (games.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No games recorded yet. Add a game to get started.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No game data available.</td></tr>';
     }
 }
 
