@@ -183,6 +183,7 @@ async function loadTeamSummary(teamId) {
     name: fullName(player.FirstName, player.LastName),
     firstName: player.FirstName,
     lastName: player.LastName,
+    email: player.Email,
     position: player.Position,
     year: player.PlayerYear,
     bats: player.BatStance,
@@ -212,7 +213,6 @@ async function loadTeamSummary(teamId) {
 
   const teamBattingHits = battingStats.reduce((sum, entry) => sum + entry.h, 0);
   const teamBattingAtBats = battingStats.reduce((sum, entry) => sum + entry.ab, 0);
-  const teamEarnedRuns = pitchingStats.reduce((sum, entry) => sum + Number(entry.era ? 0 : 0), 0);
   const totalPitchingInnings = pitchingByPlayer.size
     ? Array.from(pitchingByPlayer.values()).reduce((sum, entry) => sum + entry.ip, 0)
     : 0;
@@ -239,6 +239,7 @@ async function loadTeamSummary(teamId) {
   const games = gameRows.map(game => ({
     gameId: game.GameID,
     date: formatDate(game.GameDate),
+    gameDateISO: new Date(game.GameDate).toISOString().slice(0, 10),
     opponent: String(game.HomeTeamID) === String(teamId)
       ? (teamNameById.get(String(game.AwayTeamID)) || `Team ${game.AwayTeamID}`)
       : (teamNameById.get(String(game.HomeTeamID)) || `Team ${game.HomeTeamID}`),
@@ -593,6 +594,38 @@ app.post('/api/games/:gameId/stats', async (req, res) => {
     res.status(500).json({ error: 'Failed to save game stats' });
   } finally {
     connection.release();
+  }
+});
+
+app.get('/api/games/:gameId/stats/:playerId', async (req, res) => {
+  try {
+    const { gameId, playerId } = req.params;
+
+    const [battingRows] = await db.query(
+      'SELECT * FROM BATTING_STATS WHERE GameID = ? AND PlayerID = ?',
+      [gameId, playerId]
+    );
+    const [pitchingRows] = await db.query(
+      'SELECT * FROM PITCHING_STATS WHERE GameID = ? AND PlayerID = ?',
+      [gameId, playerId]
+    );
+    const [fieldingRows] = await db.query(
+      'SELECT * FROM FIELDING_STATS WHERE GameID = ? AND PlayerID = ?',
+      [gameId, playerId]
+    );
+    const [catchingRows] = await db.query(
+      'SELECT * FROM CATCHING_STATS WHERE GameID = ? AND PlayerID = ?',
+      [gameId, playerId]
+    );
+
+    res.json({
+      batting: battingRows[0] || null,
+      pitching: pitchingRows[0] || null,
+      fielding: fieldingRows[0] || null,
+      catching: catchingRows[0] || null
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load player game stats' });
   }
 });
 

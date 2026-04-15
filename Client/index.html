@@ -19,21 +19,6 @@
                 <p>Select a team to view and manage statistics</p>
             </div>
             <div class="team-select-grid" id="teamSelectGrid">
-                <div class="team-card" data-team-id="1" data-team-name="New Paltz Hawks">
-                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
-                    <h3>New Paltz Hawks</h3>
-                    <p>Varsity Baseball</p>
-                </div>
-                <div class="team-card" data-team-id="2" data-team-name="Hudson Valley Bears">
-                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
-                    <h3>Hudson Valley Bears</h3>
-                    <p>Varsity Baseball</p>
-                </div>
-                <div class="team-card" data-team-id="3" data-team-name="Capital City Knights">
-                    <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
-                    <h3>Capital City Knights</h3>
-                    <p>Varsity Baseball</p>
-                </div>
                 <div class="team-card add-team-card" onclick="showAddTeamModal()">
                     <div class="team-card-icon"><i class="fa-solid fa-plus"></i></div>
                     <h3>Add New Team</h3>
@@ -42,7 +27,7 @@
             </div>
             <div class="notice-banner" style="margin-top: 30px;">
                 <span class="notice-icon">ℹ️</span>
-                <p>Database connection pending. Displaying sample teams for preview purposes.</p>
+                <p>Teams are loaded from your database.</p>
             </div>
         </div>
     </div>
@@ -148,9 +133,7 @@
                             </tr>
                         </thead>
                         <tbody id="topBattersTableBody">
-                            <tr><td>Sample Player 1</td><td>.342</td><td>12</td><td>45</td></tr>
-                            <tr><td>Sample Player 2</td><td>.318</td><td>8</td><td>38</td></tr>
-                            <tr><td>Sample Player 3</td><td>.305</td><td>15</td><td>52</td></tr>
+                            <tr><td colspan="4">No batting data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -166,9 +149,7 @@
                             </tr>
                         </thead>
                         <tbody id="topPitchersTableBody">
-                            <tr><td>Sample Pitcher 1</td><td>2.15</td><td>8-2</td><td>89</td></tr>
-                            <tr><td>Sample Pitcher 2</td><td>2.87</td><td>6-3</td><td>72</td></tr>
-                            <tr><td>Sample Pitcher 3</td><td>3.21</td><td>5-4</td><td>65</td></tr>
+                            <tr><td colspan="4">No pitching data available.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -176,7 +157,7 @@
 
             <div class="notice-banner">
                 <span class="notice-icon">ℹ️</span>
-                <p>Database connection pending. Displaying sample data for preview purposes.</p>
+                <p>All dashboard values are loaded from the database.</p>
             </div>
         </section>
 
@@ -211,45 +192,7 @@
                         </tr>
                     </thead>
                     <tbody id="playersTableBody">
-                        <tr>
-                            <td>1</td>
-                            <td>John Smith</td>
-                            <td>SS</td>
-                            <td>Junior</td>
-                            <td>R/R</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-icon-only" title="Edit">✏️</button>
-                                <button class="btn-icon-only" title="View Stats">📊</button>
-                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td>Mike Johnson</td>
-                            <td>P</td>
-                            <td>Senior</td>
-                            <td>L/L</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-icon-only" title="Edit">✏️</button>
-                                <button class="btn-icon-only" title="View Stats">📊</button>
-                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>24</td>
-                            <td>David Williams</td>
-                            <td>1B</td>
-                            <td>Sophomore</td>
-                            <td>L/R</td>
-                            <td><span class="status-badge injured">Injured</span></td>
-                            <td class="action-buttons">
-                                <button class="btn-icon-only" title="Edit">✏️</button>
-                                <button class="btn-icon-only" title="View Stats">📊</button>
-                                <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                            </td>
-                        </tr>
+                        <tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-secondary);">No players loaded yet.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -295,42 +238,7 @@
                             </tr>
                         </thead>
                         <tbody id="gamesTableBody">
-                            <tr>
-                                <td>02/20/2026</td>
-                                <td>Riverside Rebels</td>
-                                <td>Home</td>
-                                <td><span class="result-badge win">W</span></td>
-                                <td>7 - 3</td>
-                                <td class="action-buttons">
-                                    <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(1)">📊</button>
-                                    <button class="btn-icon-only" title="Edit" onclick="editGame(1)">✏️</button>
-                                    <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>02/18/2026</td>
-                                <td>Mountain Eagles</td>
-                                <td>Away</td>
-                                <td><span class="result-badge loss">L</span></td>
-                                <td>2 - 5</td>
-                                <td class="action-buttons">
-                                    <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(2)">📊</button>
-                                    <button class="btn-icon-only" title="Edit" onclick="editGame(2)">✏️</button>
-                                    <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>02/15/2026</td>
-                                <td>Valley Storm</td>
-                                <td>Home</td>
-                                <td><span class="result-badge win">W</span></td>
-                                <td>9 - 4</td>
-                                <td class="action-buttons">
-                                    <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(3)">📊</button>
-                                    <button class="btn-icon-only" title="Edit" onclick="editGame(3)">✏️</button>
-                                    <button class="btn-icon-only danger" title="Delete">🗑️</button>
-                                </td>
-                            </tr>
+                            <tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No games recorded yet. Add a game to get started.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -389,9 +297,6 @@
                             <label for="selectGameForStats">Select Game</label>
                             <select id="selectGameForStats" required onchange="loadGameForStats(this.value)">
                                 <option value="">-- Select a Game --</option>
-                                <option value="1">02/20/2026 vs Riverside Rebels (W 7-3)</option>
-                                <option value="2">02/18/2026 vs Mountain Eagles (L 2-5)</option>
-                                <option value="3">02/15/2026 vs Valley Storm (W 9-4)</option>
                             </select>
                         </div>
                     </div>
