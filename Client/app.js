@@ -321,33 +321,12 @@ async function loadTeamData(teamId) {
         updateStatsPlayerDropdown(teamData.players);
         updateGamesTable(teamId);
         updateGameDropdowns(teamId);
-        populateOpponentTeams(teamId);
     } catch (error) {
         console.error('Failed to load selected team data.', error);
         showToast(error.message || 'Failed to load team data.', 'error');
     }
 }
 
-async function populateOpponentTeams(teamId) {
-    const opponentSelect = document.getElementById('gameOpponent');
-    if (!opponentSelect) return;
-
-    try {
-        const teams = await apiRequest('/teams');
-        opponentSelect.innerHTML = '<option value="">Select Opponent Team</option>';
-        teams
-            .filter(team => String(team.teamId) !== String(teamId))
-            .forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.teamId;
-                option.dataset.teamName = team.name;
-                option.textContent = `${team.name} (${team.level})`;
-                opponentSelect.appendChild(option);
-            });
-    } catch (error) {
-        console.warn('Unable to load opponent teams.', error);
-    }
-}
 
 function updateDashboardLeaders(teamData) {
     const topBattersBody = document.getElementById('topBattersTableBody');
@@ -717,6 +696,7 @@ function initForms() {
 }
 
 // Handle adding a new game
+// Handle adding a new game
 async function handleAddGame(form) {
     if (!selectedTeam || !selectedTeam.id) {
         showToast('Please select a team first.', 'error');
@@ -724,34 +704,41 @@ async function handleAddGame(form) {
     }
 
     const gameDate = document.getElementById('gameDate').value;
-    const gameOpponent = document.getElementById('gameOpponent').value;
+    const opponentTeamName = document.getElementById('gameOpponent').value?.trim();
     const gameLocation = document.getElementById('gameLocation').value;
     const teamScore = document.getElementById('teamScore').value || '0';
     const opponentScore = document.getElementById('opponentScore').value || '0';
 
-    if (!gameDate || !gameOpponent) {
+    if (!gameDate || !opponentTeamName) {
         showToast('Please fill in required fields.', 'error');
         return;
     }
 
     try {
-        const opponentSelect = document.getElementById('gameOpponent');
-        const opponentOption = opponentSelect?.selectedOptions?.[0];
-        const opponentTeamId = Number(gameOpponent);
-        const opponentTeamName = opponentOption?.dataset?.teamName || '';
         const selectedTeamId = Number(selectedTeam.id);
         const selectedTeamName = selectedTeam.name;
-
-        if (!opponentTeamId || !opponentTeamName) {
-            showToast('Please choose an opponent team.', 'error');
-            return;
-        }
-
         const isAwayGame = gameLocation === 'Away';
-        const homeTeamId = isAwayGame ? opponentTeamId : selectedTeamId;
-        const awayTeamId = isAwayGame ? selectedTeamName : opponentTeamName;
         const homeScore = isAwayGame ? parseInt(opponentScore, 10) : parseInt(teamScore, 10);
         const awayScore = isAwayGame ? parseInt(teamScore, 10) : parseInt(opponentScore, 10);
+
+        let homeTeamId = selectedTeamId;
+        let awayTeamId = opponentTeamName;
+
+        if (isAwayGame) {
+            // For away games, try to find the opponent team to get its ID for HomeTeamID
+            const teams = await apiRequest('/teams');
+            const opponentTeam = teams.find(t => 
+                t.name.toLowerCase() === opponentTeamName.toLowerCase()
+            );
+            
+            if (!opponentTeam) {
+                showToast(`Opponent team "${opponentTeamName}" not found in system. Please check the spelling.`, 'error');
+                return;
+            }
+            
+            homeTeamId = opponentTeam.teamId;
+            awayTeamId = selectedTeamName;
+        }
 
         await apiRequest('/games', {
             method: 'POST',
