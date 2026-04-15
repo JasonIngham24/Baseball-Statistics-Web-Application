@@ -1,105 +1,51 @@
 /**
  * Baseball Statistics Manager - Frontend JavaScript
- * This file handles UI interactions and placeholder functionality.
- * Database integration will be added when the backend is connected.
+ * This file handles UI interactions and database-backed CRUD calls.
  */
 
 // ===== Global State =====
 let selectedTeam = null;
 let selectedGameForStats = null;
+const loadedTeamData = {};
 
-// ===== Sample Games Data (placeholder for database) =====
-const sampleGamesData = {
-    1: [
-        { id: 1, date: '02/20/2026', opponent: 'Riverside Rebels', location: 'Home', result: 'W', teamScore: 7, opponentScore: 3 },
-        { id: 2, date: '02/18/2026', opponent: 'Mountain Eagles', location: 'Away', result: 'L', teamScore: 2, opponentScore: 5 },
-        { id: 3, date: '02/15/2026', opponent: 'Valley Storm', location: 'Home', result: 'W', teamScore: 9, opponentScore: 4 }
-    ],
-    2: [
-        { id: 1, date: '02/19/2026', opponent: 'River Rats', location: 'Home', result: 'W', teamScore: 5, opponentScore: 2 },
-        { id: 2, date: '02/16/2026', opponent: 'Hilltop Hornets', location: 'Away', result: 'W', teamScore: 8, opponentScore: 6 }
-    ],
-    3: [
-        { id: 1, date: '02/21/2026', opponent: 'Lakeside Lions', location: 'Home', result: 'L', teamScore: 3, opponentScore: 7 },
-        { id: 2, date: '02/17/2026', opponent: 'Coastal Crabs', location: 'Away', result: 'W', teamScore: 4, opponentScore: 1 }
-    ]
-};
+async function apiRequest(path, options = {}) {
+    const response = await fetch(`/api${path}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+        },
+        ...options
+    });
 
-// ===== Sample Team Data (placeholder for database) =====
-const sampleTeamData = {
-    1: {
-        id: 1,
-        name: 'New Paltz Hawks',
-        level: 'Varsity Baseball',
-        players: [
-            { jersey: 1, name: 'John Smith', position: 'SS', year: 'Junior', bats: 'R', throws: 'R', status: 'active' },
-            { jersey: 7, name: 'Mike Johnson', position: 'P', year: 'Senior', bats: 'L', throws: 'L', status: 'active' },
-            { jersey: 24, name: 'David Williams', position: '1B', year: 'Sophomore', bats: 'L', throws: 'R', status: 'injured' }
-        ],
-        battingStats: [
-            { player: 'John Smith', g: 42, ab: 168, r: 32, h: 54, doubles: 12, triples: 2, hr: 8, rbi: 35, bb: 22, so: 28, sb: 15, avg: '.321', obp: '.402', slg: '.542' },
-            { player: 'Mike Johnson', g: 38, ab: 145, r: 25, h: 42, doubles: 8, triples: 1, hr: 5, rbi: 28, bb: 18, so: 35, sb: 8, avg: '.290', obp: '.365', slg: '.441' },
-            { player: 'David Williams', g: 35, ab: 132, r: 22, h: 38, doubles: 10, triples: 0, hr: 12, rbi: 42, bb: 25, so: 30, sb: 2, avg: '.288', obp: '.385', slg: '.561' }
-        ],
-        pitchingStats: [
-            { player: 'Mike Johnson', era: '2.15', wl: '8-2', k: 89 },
-            { player: 'Chris Davis', era: '2.87', wl: '6-3', k: 72 },
-            { player: 'Tom Wilson', era: '3.21', wl: '5-4', k: 65 }
-        ],
-        teamAvg: '.285',
-        teamERA: '3.42',
-        fieldingPct: '.975',
-        activePlayerCount: 25
-    },
-    2: {
-        id: 2,
-        name: 'Hudson Valley Tigers',
-        level: 'Varsity Baseball',
-        players: [
-            { jersey: 5, name: 'Chris Martinez', position: 'CF', year: 'Senior', bats: 'R', throws: 'R', status: 'active' },
-            { jersey: 12, name: 'Jake Thompson', position: 'P', year: 'Junior', bats: 'R', throws: 'R', status: 'active' },
-            { jersey: 33, name: 'Ryan Lee', position: 'C', year: 'Sophomore', bats: 'R', throws: 'R', status: 'active' }
-        ],
-        battingStats: [
-            { player: 'Chris Martinez', g: 40, ab: 155, r: 28, h: 48, doubles: 10, triples: 3, hr: 6, rbi: 32, bb: 20, so: 25, sb: 18, avg: '.310', obp: '.390', slg: '.510' },
-            { player: 'Jake Thompson', g: 15, ab: 45, r: 5, h: 12, doubles: 2, triples: 0, hr: 1, rbi: 8, bb: 5, so: 15, sb: 0, avg: '.267', obp: '.340', slg: '.378' },
-            { player: 'Ryan Lee', g: 38, ab: 140, r: 20, h: 42, doubles: 8, triples: 1, hr: 4, rbi: 28, bb: 15, so: 22, sb: 2, avg: '.300', obp: '.365', slg: '.443' }
-        ],
-        pitchingStats: [
-            { player: 'Jake Thompson', era: '2.48', wl: '7-1', k: 81 },
-            { player: 'Liam Brooks', era: '2.95', wl: '5-3', k: 67 },
-            { player: 'Noah Perez', era: '3.12', wl: '2-2', k: 41 }
-        ],
-        teamAvg: '.292',
-        teamERA: '3.15',
-        fieldingPct: '.982',
-        activePlayerCount: 22
-    },
-    3: {
-        id: 3,
-        name: 'Kingston Knights',
-        level: 'Varsity Baseball',
-        players: [
-            { jersey: 2, name: 'Alex Brown', position: '2B', year: 'Junior', bats: 'L', throws: 'R', status: 'active' },
-            { jersey: 18, name: 'Sam Wilson', position: 'P', year: 'Senior', bats: 'R', throws: 'R', status: 'active' },
-            { jersey: 44, name: 'Tom Garcia', position: 'RF', year: 'Freshman', bats: 'R', throws: 'R', status: 'active' }
-        ],
-        battingStats: [
-            { player: 'Alex Brown', g: 38, ab: 150, r: 30, h: 50, doubles: 12, triples: 4, hr: 3, rbi: 25, bb: 24, so: 20, sb: 12, avg: '.333', obp: '.420', slg: '.493' },
-            { player: 'Sam Wilson', g: 18, ab: 52, r: 6, h: 14, doubles: 3, triples: 0, hr: 2, rbi: 10, bb: 4, so: 18, sb: 0, avg: '.269', obp: '.321', slg: '.423' },
-            { player: 'Tom Garcia', g: 30, ab: 110, r: 15, h: 30, doubles: 5, triples: 1, hr: 2, rbi: 18, bb: 10, so: 28, sb: 5, avg: '.273', obp: '.333', slg: '.382' }
-        ],
-        pitchingStats: [
-            { player: 'Sam Wilson', era: '2.76', wl: '6-4', k: 74 },
-            { player: 'Ethan Clark', era: '3.05', wl: '4-4', k: 59 },
-            { player: 'Mason Reed', era: '3.44', wl: '3-2', k: 48 }
-        ],
-        teamAvg: '.278',
-        teamERA: '3.68',
-        fieldingPct: '.968',
-        activePlayerCount: 20
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'Request failed');
     }
-};
+
+    return response.status === 204 ? null : response.json();
+}
+
+function createTeamCardElement(team) {
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.setAttribute('data-team-id', team.teamId);
+    card.setAttribute('data-team-name', team.name);
+    card.innerHTML = `
+        <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
+        <h3>${team.name}</h3>
+        <p>${team.level} - ${team.season}</p>
+    `;
+
+    card.addEventListener('click', function() {
+        selectTeam(String(team.teamId), team.name);
+    });
+
+    return card;
+}
+
+function getTeamGames(teamId) {
+    return loadedTeamData[teamId]?.games || [];
+}
 
 // ===== DOM Content Loaded =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -111,7 +57,32 @@ document.addEventListener('DOMContentLoaded', function() {
     initGameStatsToggles();
     showDatabaseNotice();
     initHamburgerMenu();
+    loadTeamCardsFromDatabase();
 });
+
+async function loadTeamCardsFromDatabase() {
+    const teamGrid = document.getElementById('teamSelectGrid');
+    if (!teamGrid) return;
+
+    const addTeamCard = teamGrid.querySelector('.add-team-card');
+
+    try {
+        const teams = await apiRequest('/teams');
+        teamGrid.innerHTML = '';
+        if (Array.isArray(teams) && teams.length > 0) {
+            teams.forEach(team => {
+                teamGrid.appendChild(createTeamCardElement(team));
+            });
+        }
+
+        if (addTeamCard) {
+            teamGrid.appendChild(addTeamCard);
+        }
+    } catch (error) {
+        console.error('Failed to load teams from API.', error);
+        showToast('Failed to load teams. Check server/database connection.', 'error');
+    }
+}
 
 // ===== Hamburger Menu =====
 function initHamburgerMenu() {
@@ -193,10 +164,21 @@ function selectTeam(teamId, teamName) {
 }
 
 function changeTeam() {
+    selectedTeam = null;
+    selectedGameForStats = null;
+
     // Show team selection overlay
     const overlay = document.getElementById('teamSelectOverlay');
     if (overlay) {
         overlay.classList.add('active');
+    }
+
+    const teamIndicator = document.getElementById('teamIndicator');
+    if (teamIndicator) {
+        const nameNode = teamIndicator.querySelector('.team-indicator-name');
+        if (nameNode) {
+            nameNode.textContent = 'No Team Selected';
+        }
     }
 
     // Hide main app
@@ -221,7 +203,52 @@ function showAddTeamModal() {
     openModal('addTeamModal');
 }
 
-function handleAddTeam(form) {
+function openDeleteTeamModal() {
+    if (!selectedTeam?.id || !selectedTeam?.name) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const teamName = document.getElementById('deleteTeamName');
+    if (teamName) {
+        teamName.textContent = selectedTeam.name;
+    }
+
+    const deleteButton = document.getElementById('confirmDeleteTeamButton');
+    if (deleteButton) {
+        deleteButton.setAttribute('data-team-id', selectedTeam.id);
+    }
+
+    openModal('deleteTeamModal');
+}
+
+async function confirmDeleteTeam() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const teamId = selectedTeam.id;
+    const teamName = selectedTeam.name;
+
+    try {
+        await apiRequest(`/teams/${teamId}`, { method: 'DELETE' });
+
+        delete loadedTeamData[teamId];
+        selectedTeam = null;
+        selectedGameForStats = null;
+
+        closeModal('deleteTeamModal');
+        changeTeam();
+        await loadTeamCardsFromDatabase();
+
+        showToast(`Team "${teamName}" deleted.`, 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to delete team.', 'error');
+    }
+}
+
+async function handleAddTeam(form) {
     const teamName = document.getElementById('teamName').value;
     const teamLevel = document.getElementById('teamLevel').value;
     const teamSeason = document.getElementById('teamSeason').value;
@@ -231,60 +258,95 @@ function handleAddTeam(form) {
         return;
     }
 
-    // Generate a new team ID (placeholder)
-    const newTeamId = Date.now();
+    try {
+        const createdTeam = await apiRequest('/teams', {
+            method: 'POST',
+            body: JSON.stringify({
+                name: teamName,
+                level: teamLevel,
+                season: teamSeason
+            })
+        });
 
-    // Add new team card to the grid
-    const teamGrid = document.getElementById('teamSelectGrid');
-    const addTeamCard = teamGrid.querySelector('.add-team-card');
+        const teamGrid = document.getElementById('teamSelectGrid');
+        const addTeamCard = teamGrid ? teamGrid.querySelector('.add-team-card') : null;
+        const newTeamCard = createTeamCardElement(createdTeam);
 
-    const newTeamCard = document.createElement('div');
-    newTeamCard.className = 'team-card';
-    newTeamCard.setAttribute('data-team-id', newTeamId);
-    newTeamCard.setAttribute('data-team-name', teamName);
-    newTeamCard.innerHTML = `
-        <div class="team-card-icon"><i class="fa-solid fa-baseball"></i></div>
-        <h3>${teamName}</h3>
-        <p>${teamLevel} - ${teamSeason}</p>
-    `;
+        if (teamGrid) {
+            if (addTeamCard) {
+                teamGrid.insertBefore(newTeamCard, addTeamCard);
+            } else {
+                teamGrid.appendChild(newTeamCard);
+            }
+        }
 
-    // Insert before the "Add Team" card
-    teamGrid.insertBefore(newTeamCard, addTeamCard);
-
-    // Add click event to new card
-    newTeamCard.addEventListener('click', function() {
-        selectTeam(newTeamId, teamName);
-    });
-
-    showToast(`Team "${teamName}" created! (Database pending)`, 'success');
-    closeModal('addTeamModal');
-    form.reset();
+        showToast(`Team "${teamName}" created!`, 'success');
+        closeModal('addTeamModal');
+        form.reset();
+    } catch (error) {
+        showToast(error.message || 'Failed to create team.', 'error');
+    }
 }
 
-function loadTeamData(teamId) {
-    const teamData = sampleTeamData[teamId];
-    
-    if (!teamData) {
-        console.log('Team data not found, using defaults');
-        return;
+async function loadTeamData(teamId) {
+    try {
+        const [response, fieldingStats] = await Promise.all([
+            apiRequest(`/teams/${teamId}/summary`),
+            apiRequest(`/teams/${teamId}/fielding`)
+        ]);
+        const teamData = {
+            id: response.team.teamId,
+            name: response.team.name,
+            level: response.team.level,
+            season: response.team.season,
+            players: response.players || [],
+            battingStats: response.battingStats || [],
+            pitchingStats: response.pitchingStats || [],
+            fieldingStats: fieldingStats || response.fieldingStats || [],
+            games: response.games || [],
+            teamAvg: response.summary?.teamAvg || '.000',
+            teamERA: response.summary?.teamERA || '0.00',
+            fieldingPct: response.summary?.fieldingPct || '.000',
+            activePlayerCount: response.summary?.activePlayerCount || 0
+        };
+
+        loadedTeamData[teamId] = teamData;
+
+        updateDashboardStats(teamData);
+        updateDashboardLeaders(teamData);
+        updatePlayersTable(teamData.players);
+        updateBattingTable(teamData.battingStats);
+        updatePitchingTable(teamData.pitchingStats);
+        updateFieldingTable(teamData.fieldingStats);
+        updateStatsPlayerDropdown(teamData.players);
+        updateGamesTable(teamId);
+        updateGameDropdowns(teamId);
+        populateOpponentTeams(teamId);
+    } catch (error) {
+        console.error('Failed to load selected team data.', error);
+        showToast(error.message || 'Failed to load team data.', 'error');
     }
+}
 
-    // Update dashboard stats
-    updateDashboardStats(teamData);
-    updateDashboardLeaders(teamData);
+async function populateOpponentTeams(teamId) {
+    const opponentSelect = document.getElementById('gameOpponent');
+    if (!opponentSelect) return;
 
-    // Update players table
-    updatePlayersTable(teamData.players);
-
-    // Update batting stats table
-    updateBattingTable(teamData.battingStats);
-
-    // Update player dropdowns (for game stats entry)
-    updateStatsPlayerDropdown(teamData.players);
-
-    // Update games table and dropdown
-    updateGamesTable(teamId);
-    updateGameDropdowns(teamId);
+    try {
+        const teams = await apiRequest('/teams');
+        opponentSelect.innerHTML = '<option value="">Select Opponent Team</option>';
+        teams
+            .filter(team => String(team.teamId) !== String(teamId))
+            .forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.teamId;
+                option.dataset.teamName = team.name;
+                option.textContent = `${team.name} (${team.level})`;
+                opponentSelect.appendChild(option);
+            });
+    } catch (error) {
+        console.warn('Unable to load opponent teams.', error);
+    }
 }
 
 function updateDashboardLeaders(teamData) {
@@ -365,6 +427,7 @@ function updatePlayersTable(players) {
         const statusClass = player.status === 'active' ? 'active' : 
                             player.status === 'injured' ? 'injured' : 'inactive';
         const statusText = capitalizeFirst(player.status);
+        const playerId = player.playerId || player.jersey;
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -375,9 +438,9 @@ function updatePlayersTable(players) {
             <td>${player.bats}/${player.throws}</td>
             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
             <td class="action-buttons">
-                <button class="btn-icon-only" title="Edit">✏️</button>
+                <button class="btn-icon-only" title="Edit" onclick="editPlayer(${playerId})">✏️</button>
                 <button class="btn-icon-only" title="View Stats">📊</button>
-                <button class="btn-icon-only danger" title="Delete" onclick="deletePlayerRow(this)">🗑️</button>
+                <button class="btn-icon-only danger" title="Delete" onclick="deletePlayer(${playerId}, this)">🗑️</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -389,6 +452,11 @@ function updateBattingTable(battingStats) {
     if (!tableBody) return;
 
     tableBody.innerHTML = '';
+
+    if (!Array.isArray(battingStats) || battingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 30px; color: var(--text-secondary);">No batting data available.</td></tr>';
+        return;
+    }
 
     battingStats.forEach(stat => {
         const row = document.createElement('tr');
@@ -411,6 +479,77 @@ function updateBattingTable(battingStats) {
         `;
         tableBody.appendChild(row);
     });
+}
+
+function updatePitchingTable(pitchingStats) {
+    const tableBody = document.getElementById('pitchingTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(pitchingStats) || pitchingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 30px; color: var(--text-secondary);">No pitching data available.</td></tr>';
+        return;
+    }
+
+    pitchingStats.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.player}</td>
+            <td>${stat.wins ?? 0}</td>
+            <td>${stat.losses ?? 0}</td>
+            <td>${stat.era}</td>
+            <td>${stat.g ?? 0}</td>
+            <td>${stat.gs ?? 0}</td>
+            <td>${stat.sv ?? 0}</td>
+            <td>${formatInningsPitched(stat.ip)}</td>
+            <td>${stat.h ?? 0}</td>
+            <td>${stat.r ?? 0}</td>
+            <td>${stat.er ?? 0}</td>
+            <td>${stat.bb ?? 0}</td>
+            <td>${stat.so ?? stat.k ?? 0}</td>
+            <td>${stat.whip}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function updateFieldingTable(fieldingStats) {
+    const tableBody = document.getElementById('fieldingTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(fieldingStats) || fieldingStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 30px; color: var(--text-secondary);">No fielding data available.</td></tr>';
+        return;
+    }
+
+    fieldingStats.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.player}</td>
+            <td>${stat.position || '—'}</td>
+            <td>${stat.g ?? 0}</td>
+            <td>${stat.tc ?? 0}</td>
+            <td>${stat.po ?? 0}</td>
+            <td>${stat.a ?? 0}</td>
+            <td>${stat.e ?? 0}</td>
+            <td>${stat.dp ?? 0}</td>
+            <td>${stat.fldPct || '.000'}</td>
+            <td>${stat.pb ?? 0}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function formatInningsPitched(innings) {
+    const value = Number.parseFloat(innings);
+    if (!Number.isFinite(value)) {
+        return '0.0';
+    }
+
+    return value.toFixed(1);
 }
 
 function updatePlayerDropdowns(players) {
@@ -444,7 +583,7 @@ function updateStatsPlayerDropdown(players) {
     
     players.forEach(player => {
         const option = document.createElement('option');
-        option.value = player.jersey;
+        option.value = player.playerId;
         option.textContent = `#${player.jersey} ${player.name} (${player.position})`;
         dropdown.appendChild(option);
     });
@@ -455,13 +594,14 @@ function updateGamesTable(teamId) {
     const tableBody = document.getElementById('gamesTableBody');
     if (!tableBody) return;
     
-    const games = sampleGamesData[teamId] || [];
+    const games = getTeamGames(teamId);
     
     tableBody.innerHTML = '';
     
     games.forEach(game => {
         const resultClass = game.result === 'W' ? 'win' : game.result === 'L' ? 'loss' : 'tie';
         const row = document.createElement('tr');
+        const gameId = game.gameId || game.id;
         row.innerHTML = `
             <td>${game.date}</td>
             <td>${game.opponent}</td>
@@ -469,16 +609,16 @@ function updateGamesTable(teamId) {
             <td><span class="result-badge ${resultClass}">${game.result}</span></td>
             <td>${game.teamScore} - ${game.opponentScore}</td>
             <td class="action-buttons">
-                <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(${game.id})">📊</button>
-                <button class="btn-icon-only" title="Edit" onclick="editGame(${game.id})">✏️</button>
-                <button class="btn-icon-only danger" title="Delete" onclick="deleteGame(${game.id})">🗑️</button>
+                <button class="btn-icon-only" title="View Details" onclick="viewGameDetails(${gameId})">📊</button>
+                <button class="btn-icon-only" title="Edit" onclick="editGame(${gameId})">✏️</button>
+                <button class="btn-icon-only danger" title="Delete" onclick="deleteGame(${gameId})">🗑️</button>
             </td>
         `;
         tableBody.appendChild(row);
     });
     
     if (games.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No games recorded yet. Add a game to get started.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No game data available.</td></tr>';
     }
 }
 
@@ -487,13 +627,13 @@ function updateGameDropdowns(teamId) {
     const dropdown = document.getElementById('selectGameForStats');
     if (!dropdown) return;
     
-    const games = sampleGamesData[teamId] || [];
+    const games = getTeamGames(teamId);
     
     dropdown.innerHTML = '<option value="">-- Select a Game --</option>';
     
     games.forEach(game => {
         const option = document.createElement('option');
-        option.value = game.id;
+        option.value = game.gameId || game.id;
         option.textContent = `${game.date} vs ${game.opponent} (${game.result} ${game.teamScore}-${game.opponentScore})`;
         dropdown.appendChild(option);
     });
@@ -577,7 +717,7 @@ function initForms() {
 }
 
 // Handle adding a new game
-function handleAddGame(form) {
+async function handleAddGame(form) {
     if (!selectedTeam || !selectedTeam.id) {
         showToast('Please select a team first.', 'error');
         return;
@@ -594,39 +734,44 @@ function handleAddGame(form) {
         return;
     }
 
-    // Determine result
-    let result = 'T';
-    if (parseInt(teamScore) > parseInt(opponentScore)) result = 'W';
-    else if (parseInt(teamScore) < parseInt(opponentScore)) result = 'L';
+    try {
+        const opponentSelect = document.getElementById('gameOpponent');
+        const opponentOption = opponentSelect?.selectedOptions?.[0];
+        const opponentTeamId = Number(gameOpponent);
+        const opponentTeamName = opponentOption?.dataset?.teamName || '';
+        const selectedTeamId = Number(selectedTeam.id);
+        const selectedTeamName = selectedTeam.name;
 
-    // Format date for display
-    const dateObj = new Date(gameDate);
-    const formattedDate = dateObj.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        if (!opponentTeamId || !opponentTeamName) {
+            showToast('Please choose an opponent team.', 'error');
+            return;
+        }
 
-    const teamId = selectedTeam.id;
-    if (!sampleGamesData[teamId]) {
-        sampleGamesData[teamId] = [];
+        const isAwayGame = gameLocation === 'Away';
+        const homeTeamId = isAwayGame ? opponentTeamId : selectedTeamId;
+        const awayTeamId = isAwayGame ? selectedTeamName : opponentTeamName;
+        const homeScore = isAwayGame ? parseInt(opponentScore, 10) : parseInt(teamScore, 10);
+        const awayScore = isAwayGame ? parseInt(teamScore, 10) : parseInt(opponentScore, 10);
+
+        await apiRequest('/games', {
+            method: 'POST',
+            body: JSON.stringify({
+                gameDate,
+                gameLocation,
+                homeScore,
+                awayScore,
+                homeTeamId,
+                awayTeamId
+            })
+        });
+
+        await loadTeamData(selectedTeam.id);
+        showToast('Game added successfully!', 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to create game.', 'error');
+        return;
     }
 
-    const currentGames = sampleGamesData[teamId];
-    const maxExistingId = currentGames.reduce((maxId, game) => Math.max(maxId, game.id), 0);
-    const newGame = {
-        id: maxExistingId + 1,
-        date: formattedDate,
-        opponent: gameOpponent,
-        location: gameLocation,
-        result,
-        teamScore: parseInt(teamScore, 10),
-        opponentScore: parseInt(opponentScore, 10)
-    };
-
-    currentGames.unshift(newGame);
-    console.log('New game data:', newGame);
-
-    updateGamesTable(teamId);
-    updateGameDropdowns(teamId);
-
-    showToast('Game added successfully! (Database pending)', 'success');
     form.reset();
 
     // Switch to games list tab
@@ -634,44 +779,13 @@ function handleAddGame(form) {
     if (gamesListBtn) gamesListBtn.click();
 }
 
-// Handle form submissions (placeholder until database is connected)
-function handleFormSubmit(type, form) {
-    // Validate required fields
-    const requiredFields = form.querySelectorAll('[required]');
-    let isValid = true;
-
-    requiredFields.forEach(field => {
-        if (!field.value) {
-            isValid = false;
-            field.style.borderColor = '#dc3545';
-        } else {
-            field.style.borderColor = '';
-        }
-    });
-
-    if (!isValid) {
-        showToast('Please fill in all required fields.', 'error');
-        return;
-    }
-
-    // Collect form data (for future database integration)
-    const formData = new FormData(form);
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-
-    console.log(`${type} statistics data:`, data);
-    
-    // Show success message (placeholder)
-    showToast(`${capitalizeFirst(type)} statistics saved successfully! (Database pending)`, 'success');
-    
-    // Reset form after successful submission
-    form.reset();
-}
-
 // Handle adding a new player
-function handleAddPlayer(form) {
+async function handleAddPlayer(form) {
+    if (!selectedTeam || !selectedTeam.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
     const requiredFields = form.querySelectorAll('[required]');
     let isValid = true;
 
@@ -689,65 +803,53 @@ function handleAddPlayer(form) {
         return;
     }
 
-    // Collect player data
-    const playerData = {
-        jersey: document.getElementById('playerJersey').value,
-        firstName: document.getElementById('playerFirst').value,
-        lastName: document.getElementById('playerLast').value,
-        position: document.getElementById('playerPosition').value,
-        year: document.getElementById('playerYear').value,
-        bats: document.getElementById('playerBats').value,
-        throws: document.getElementById('playerThrows').value,
-        status: document.getElementById('playerStatus').value
-    };
+    try {
+        await apiRequest('/players', {
+            method: 'POST',
+            body: JSON.stringify({
+                teamId: Number(selectedTeam.id),
+                jerseyNumber: document.getElementById('playerJersey').value,
+                firstName: document.getElementById('playerFirst').value,
+                lastName: document.getElementById('playerLast').value,
+                email: document.getElementById('playerEmail').value,
+                position: document.getElementById('playerPosition').value,
+                playerYear: document.getElementById('playerYear').value,
+                batStance: document.getElementById('playerBats').value,
+                throwStance: document.getElementById('playerThrows').value,
+                playerStatus: document.getElementById('playerStatus').value
+            })
+        });
 
-    console.log('New player data:', playerData);
-
-    // Add row to table (placeholder - will be replaced with database fetch)
-    addPlayerToTable(playerData);
-
-    showToast('Player added successfully! (Database pending)', 'success');
-    closeModal('addPlayerModal');
-    form.reset();
+        await loadTeamData(selectedTeam.id);
+        showToast('Player added successfully!', 'success');
+        closeModal('addPlayerModal');
+        form.reset();
+    } catch (error) {
+        showToast(error.message || 'Failed to add player.', 'error');
+    }
 }
 
-// Add player row to table (UI only - placeholder)
-function addPlayerToTable(player) {
-    const tableBody = document.getElementById('playersTableBody');
-    if (!tableBody) return;
+async function deletePlayer(playerId, button) {
+    if (!confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
+        return;
+    }
 
-    const statusClass = player.status === 'active' ? 'active' : 
-                        player.status === 'injured' ? 'injured' : 'inactive';
-    const statusText = capitalizeFirst(player.status);
-
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
-        <td>${player.jersey}</td>
-        <td>${player.firstName} ${player.lastName}</td>
-        <td>${player.position}</td>
-        <td>${player.year}</td>
-        <td>${player.bats}/${player.throws}</td>
-        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-        <td class="action-buttons">
-            <button class="btn-icon-only" title="Edit">✏️</button>
-            <button class="btn-icon-only" title="View Stats">📊</button>
-            <button class="btn-icon-only danger" title="Delete" onclick="deletePlayerRow(this)">🗑️</button>
-        </td>
-    `;
-
-    tableBody.insertBefore(newRow, tableBody.firstChild);
-}
-
-// Delete player row (UI only - placeholder)
-function deletePlayerRow(button) {
-    if (confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
+    try {
+        await apiRequest(`/players/${playerId}`, { method: 'DELETE' });
         const row = button.closest('tr');
-        row.style.transition = 'opacity 0.3s';
-        row.style.opacity = '0';
-        setTimeout(() => {
-            row.remove();
-            showToast('Player deleted. (Database pending)', 'success');
-        }, 300);
+        if (row) {
+            row.style.transition = 'opacity 0.3s';
+            row.style.opacity = '0';
+            setTimeout(() => row.remove(), 300);
+        }
+
+        if (selectedTeam?.id) {
+            await loadTeamData(selectedTeam.id);
+        }
+
+        showToast('Player deleted.', 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to delete player.', 'error');
     }
 }
 
@@ -903,8 +1005,7 @@ function loadGameForStats(gameId) {
     showToast('Game selected. Choose a player to enter their stats.', 'info');
 }
 
-// Load existing stats for a player (placeholder)
-function loadPlayerGameStats() {
+async function loadPlayerGameStats() {
     const playerId = document.getElementById('statsPlayer').value;
     
     if (!playerId) {
@@ -917,12 +1018,84 @@ function loadPlayerGameStats() {
         return;
     }
     
-    // This would load from database when connected
-    showToast('No existing stats found. Enter new stats for this player. (Database pending)', 'info');
+    try {
+        const payload = await apiRequest(`/games/${selectedGameForStats}/stats/${playerId}`);
+
+        if (!payload?.batting && !payload?.pitching && !payload?.fielding && !payload?.catching) {
+            showToast('No existing stats found for this player in this game.', 'info');
+            clearGameStatsForm();
+            return;
+        }
+
+        clearGameStatsForm();
+
+        if (payload.batting) {
+            document.getElementById('playerBatted').checked = true;
+            document.getElementById('battingStatsFields').style.display = 'block';
+            document.getElementById('gs_ab').value = payload.batting.AtBats ?? 0;
+            document.getElementById('gs_r').value = payload.batting.Runs ?? 0;
+            document.getElementById('gs_h').value = payload.batting.Hits ?? 0;
+            document.getElementById('gs_2b').value = payload.batting.Doubles ?? 0;
+            document.getElementById('gs_3b').value = payload.batting.Triples ?? 0;
+            document.getElementById('gs_hr').value = payload.batting.HomeRuns ?? 0;
+            document.getElementById('gs_rbi').value = payload.batting.RBIs ?? 0;
+            document.getElementById('gs_bb').value = payload.batting.Walks ?? 0;
+            document.getElementById('gs_so').value = payload.batting.Strikeouts ?? 0;
+            document.getElementById('gs_sb').value = payload.batting.StolenBases ?? 0;
+            document.getElementById('gs_hbp').value = payload.batting.HitByPitch ?? 0;
+            document.getElementById('gs_sac').value = payload.batting.Sacrifice ?? 0;
+        } else {
+            document.getElementById('playerBatted').checked = false;
+            document.getElementById('battingStatsFields').style.display = 'none';
+        }
+
+        if (payload.pitching) {
+            document.getElementById('playerPitched').checked = true;
+            document.getElementById('pitchingStatsFields').style.display = 'block';
+            document.getElementById('gs_ip').value = payload.pitching.InningsPitched ?? '0';
+            document.getElementById('gs_p_h').value = payload.pitching.HitsAllowed ?? 0;
+            document.getElementById('gs_p_r').value = payload.pitching.RunsAllowed ?? 0;
+            document.getElementById('gs_er').value = payload.pitching.EarnedRuns ?? 0;
+            document.getElementById('gs_p_bb').value = payload.pitching.WalksAllowed ?? 0;
+            document.getElementById('gs_k').value = payload.pitching.Strikeouts ?? 0;
+            document.getElementById('gs_p_hr').value = payload.pitching.HomeRunsAllowed ?? 0;
+            document.getElementById('gs_pitches').value = payload.pitching.PitchCount ?? 0;
+            document.getElementById('gs_strikes').value = payload.pitching.Strikes ?? 0;
+            document.getElementById('gs_decision').value = payload.pitching.Decision || '';
+            document.getElementById('gs_gs').value = payload.pitching.PitcherStarted ? '1' : '0';
+        } else {
+            document.getElementById('playerPitched').checked = false;
+            document.getElementById('pitchingStatsFields').style.display = 'none';
+        }
+
+        if (payload.fielding) {
+            document.getElementById('playerFielded').checked = true;
+            document.getElementById('fieldingStatsFields').style.display = 'block';
+            document.getElementById('gs_pos').value = payload.fielding.Position || '';
+            document.getElementById('gs_po').value = payload.fielding.Putouts ?? 0;
+            document.getElementById('gs_a').value = payload.fielding.Assists ?? 0;
+            document.getElementById('gs_e').value = payload.fielding.Errors ?? 0;
+            document.getElementById('gs_dp').value = payload.fielding.DoublePlays ?? 0;
+
+            if ((payload.fielding.Position || '') === 'C') {
+                document.getElementById('catcherFields').style.display = 'flex';
+                document.getElementById('gs_pb').value = payload.catching?.PassedBalls ?? 0;
+                document.getElementById('gs_sba').value = payload.catching?.StolenBasesAllowed ?? 0;
+                document.getElementById('gs_cs').value = payload.catching?.CaughtStealing ?? 0;
+            }
+        } else {
+            document.getElementById('playerFielded').checked = false;
+            document.getElementById('fieldingStatsFields').style.display = 'none';
+        }
+
+        showToast('Loaded existing stats.', 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to load player stats for this game.', 'error');
+    }
 }
 
 // Save player game stats
-function savePlayerGameStats() {
+async function savePlayerGameStats() {
     const playerId = document.getElementById('statsPlayer').value;
     
     if (!playerId) {
@@ -961,6 +1134,25 @@ function savePlayerGameStats() {
             hbp: document.getElementById('gs_hbp').value || 0,
             sac: document.getElementById('gs_sac').value || 0
         };
+
+        statsData.batting.avg = calculateBattingAverage(
+            Number(statsData.batting.h),
+            Number(statsData.batting.ab)
+        );
+        statsData.batting.obp = calculateOBP(
+            Number(statsData.batting.h),
+            Number(statsData.batting.bb),
+            Number(statsData.batting.hbp),
+            Number(statsData.batting.ab),
+            Number(statsData.batting.sac)
+        );
+        statsData.batting.slg = calculateSLG(
+            Number(statsData.batting.h),
+            Number(statsData.batting.doubles),
+            Number(statsData.batting.triples),
+            Number(statsData.batting.hr),
+            Number(statsData.batting.ab)
+        );
     }
     
     // Pitching stats
@@ -979,6 +1171,12 @@ function savePlayerGameStats() {
             decision: document.getElementById('gs_decision').value || '',
             gs: document.getElementById('gs_gs').value || '0'
         };
+
+        const innings = Number.parseFloat(statsData.pitching.ip) || 0;
+        const hitsAllowed = Number(statsData.pitching.h);
+        const walksAllowed = Number(statsData.pitching.bb);
+        statsData.pitching.balls = 0;
+        statsData.pitching.whip = innings ? ((hitsAllowed + walksAllowed) / innings).toFixed(3) : '0.000';
     }
     
     // Fielding stats
@@ -994,15 +1192,29 @@ function savePlayerGameStats() {
             sba: document.getElementById('gs_sba').value || 0,
             cs: document.getElementById('gs_cs').value || 0
         };
+
+        const putouts = Number(statsData.fielding.po);
+        const assists = Number(statsData.fielding.a);
+        const errors = Number(statsData.fielding.e);
+        const denominator = putouts + assists + errors;
+        statsData.fielding.fp = denominator ? ((putouts + assists) / denominator).toFixed(3) : '1.000';
     }
     
-    console.log('Player game stats:', statsData);
-    
-    showToast('Player stats saved successfully! (Database pending)', 'success');
-    
-    // Clear form for next player
-    clearGameStatsForm();
-    document.getElementById('statsPlayer').value = '';
+    try {
+        await apiRequest(`/games/${selectedGameForStats}/stats`, {
+            method: 'POST',
+            body: JSON.stringify(statsData)
+        });
+
+        await loadTeamData(selectedTeam.id);
+        showToast('Player stats saved successfully!', 'success');
+
+        // Clear form for next player
+        clearGameStatsForm();
+        document.getElementById('statsPlayer').value = '';
+    } catch (error) {
+        showToast(error.message || 'Failed to save player stats.', 'error');
+    }
 }
 
 // Clear game stats form
@@ -1053,20 +1265,122 @@ function clearGameStatsForm() {
     if (catcherFields) catcherFields.style.display = 'none';
 }
 
-// View game details (placeholder)
 function viewGameDetails(gameId) {
-    showToast('Game details view will be available when database is connected.', 'info');
-    console.log('View game details:', gameId);
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const game = getTeamGames(selectedTeam.id).find(g => String(g.gameId || g.id) === String(gameId));
+    if (!game) {
+        showToast('Game details not found.', 'error');
+        return;
+    }
+
+    showToast(`${game.date}: ${game.result} ${game.teamScore}-${game.opponentScore} vs ${game.opponent}`, 'info');
 }
 
-// Edit game (placeholder)
-function editGame(gameId) {
-    showToast('Game editing will be available when database is connected.', 'info');
-    console.log('Edit game:', gameId);
+async function editGame(gameId) {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const game = getTeamGames(selectedTeam.id).find(g => String(g.gameId || g.id) === String(gameId));
+    if (!game) {
+        showToast('Game not found.', 'error');
+        return;
+    }
+
+    const currentTeamScore = Number(game.teamScore || 0);
+    const currentOpponentScore = Number(game.opponentScore || 0);
+    const newTeamScore = prompt('Enter updated team score:', String(currentTeamScore));
+    if (newTeamScore === null) return;
+    const newOpponentScore = prompt('Enter updated opponent score:', String(currentOpponentScore));
+    if (newOpponentScore === null) return;
+
+    const parsedTeamScore = Number(newTeamScore);
+    const parsedOpponentScore = Number(newOpponentScore);
+    if (!Number.isFinite(parsedTeamScore) || !Number.isFinite(parsedOpponentScore)) {
+        showToast('Scores must be numeric values.', 'error');
+        return;
+    }
+
+    const homeTeamId = Number(game.homeTeamId);
+    const isAwayGame = String(game.location).toLowerCase() === 'away';
+    const homeScore = isAwayGame ? parsedOpponentScore : parsedTeamScore;
+    const awayScore = isAwayGame ? parsedTeamScore : parsedOpponentScore;
+    const awayTeamId = isAwayGame ? selectedTeam.name : game.opponent;
+
+    const isoDate = game.gameDateISO || new Date(game.date).toISOString().slice(0, 10);
+
+    try {
+        await apiRequest(`/games/${gameId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                gameDate: isoDate,
+                gameLocation: game.gameLocation || game.location,
+                homeScore,
+                awayScore,
+                homeTeamId,
+                awayTeamId
+            })
+        });
+
+        await loadTeamData(selectedTeam.id);
+        showToast('Game updated.', 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to update game.', 'error');
+    }
 }
 
-// Delete game (placeholder)
-function deleteGame(gameId) {
+async function editPlayer(playerId) {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    const players = loadedTeamData[selectedTeam.id]?.players || [];
+    const player = players.find(p => String(p.playerId) === String(playerId));
+    if (!player) {
+        showToast('Player not found.', 'error');
+        return;
+    }
+
+    const newStatus = prompt('Update player status (active, injured, inactive):', player.status);
+    if (newStatus === null) return;
+
+    const normalizedStatus = String(newStatus).trim().toLowerCase();
+    if (!['active', 'injured', 'inactive'].includes(normalizedStatus)) {
+        showToast('Status must be active, injured, or inactive.', 'error');
+        return;
+    }
+
+    try {
+        await apiRequest(`/players/${playerId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                jerseyNumber: player.jersey,
+                firstName: player.firstName,
+                lastName: player.lastName,
+                email: player.email || '',
+                position: player.position,
+                playerYear: player.year,
+                batStance: player.bats,
+                throwStance: player.throws,
+                playerStatus: normalizedStatus,
+                teamId: Number(selectedTeam.id)
+            })
+        });
+
+        await loadTeamData(selectedTeam.id);
+        showToast('Player updated.', 'success');
+    } catch (error) {
+        showToast(error.message || 'Failed to update player.', 'error');
+    }
+}
+
+async function deleteGame(gameId) {
     if (confirm('Are you sure you want to delete this game? All associated stats will also be deleted.')) {
         if (!selectedTeam || !selectedTeam.id) {
             showToast('Please select a team first.', 'error');
@@ -1074,30 +1388,23 @@ function deleteGame(gameId) {
         }
 
         const teamId = selectedTeam.id;
-        const games = sampleGamesData[teamId] || [];
-        const gameIndex = games.findIndex(game => game.id === gameId);
+        try {
+            await apiRequest(`/games/${gameId}`, { method: 'DELETE' });
 
-        if (gameIndex === -1) {
-            showToast('Game not found.', 'error');
-            return;
+            if (String(selectedGameForStats) === String(gameId)) {
+                selectedGameForStats = null;
+
+                const gameSelect = document.getElementById('selectGameForStats');
+                const gameStatsForm = document.getElementById('gameStatsForm');
+                if (gameSelect) gameSelect.value = '';
+                if (gameStatsForm) gameStatsForm.style.display = 'none';
+            }
+
+            await loadTeamData(teamId);
+            showToast('Game deleted.', 'success');
+        } catch (error) {
+            showToast(error.message || 'Failed to delete game.', 'error');
         }
-
-        const [deletedGame] = games.splice(gameIndex, 1);
-
-        if (String(selectedGameForStats) === String(gameId)) {
-            selectedGameForStats = null;
-
-            const gameSelect = document.getElementById('selectGameForStats');
-            const gameStatsForm = document.getElementById('gameStatsForm');
-            if (gameSelect) gameSelect.value = '';
-            if (gameStatsForm) gameStatsForm.style.display = 'none';
-        }
-
-        updateGamesTable(teamId);
-        updateGameDropdowns(teamId);
-
-        showToast(`Deleted game vs ${deletedGame.opponent}. Changes are local and reset on refresh.`, 'success');
-        console.log('Deleted game:', deletedGame);
     }
 }
 
@@ -1127,10 +1434,8 @@ function showToast(message, type = 'info') {
 
 // ===== Database Notice =====
 function showDatabaseNotice() {
-    // This will show a console message about database status
     console.log('%c⚾ Baseball Statistics Manager', 'font-size: 20px; font-weight: bold; color: #1e3a5f;');
-    console.log('%cFront-end loaded successfully. Awaiting database connection.', 'color: #17a2b8;');
-    console.log('Sample data is currently displayed. Connect MySQL database to enable full functionality.');
+    console.log('%cFront-end loaded and connected to API routes.', 'color: #17a2b8;');
 }
 
 // ===== Utility Functions =====
@@ -1139,20 +1444,17 @@ function capitalizeFirst(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-// ===== Table Sorting (Placeholder) =====
-// This will be enhanced when real data is loaded from the database
 document.querySelectorAll('.data-table.sortable th').forEach(th => {
     th.style.cursor = 'pointer';
     th.addEventListener('click', function() {
-        showToast('Sorting will be available when database is connected.', 'info');
+        showToast('Sorting not implemented yet.', 'info');
     });
 });
 
-// ===== Filter Change Handlers (Placeholder) =====
 document.querySelectorAll('.filter-select').forEach(select => {
     select.addEventListener('change', function() {
         console.log(`Filter changed: ${this.id} = ${this.value}`);
-        showToast('Filtering will be available when database is connected.', 'info');
+        showToast('Filtering not implemented yet.', 'info');
     });
 });
 
@@ -1189,18 +1491,19 @@ function calculateOBP(hits, walks, hbp, atBats, sf) {
 
 /**
  * Calculate slugging percentage
- * @param {number} singles - Total singles
+ * @param {number} hits - Total hits
  * @param {number} doubles - Total doubles
  * @param {number} triples - Total triples
  * @param {number} homeRuns - Total home runs
  * @param {number} atBats - Total at-bats
  * @returns {string} SLG formatted as .XXX
  */
-function calculateSLG(singles, doubles, triples, homeRuns, atBats) {
+function calculateSLG(hits, doubles, triples, homeRuns, atBats) {
     if (atBats === 0) return '.000';
+    const singles = hits - doubles - triples - homeRuns;
     const totalBases = singles + (doubles * 2) + (triples * 3) + (homeRuns * 4);
     const slg = totalBases / atBats;
-    return slg.toFixed(3);
+    return slg.toFixed(3).substring(1);
 }
 
 /**
