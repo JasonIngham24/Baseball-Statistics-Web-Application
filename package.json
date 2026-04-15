@@ -1,0 +1,16 @@
+{
+  "name": "baseball-project",
+  "version": "1.0.0",
+  "description": "Baseball statistics web application with Express and MySQL",
+  "main": "Server/server.js",
+  "scripts": {
+    "start": "node Server/server.js",
+    "dev": "node --watch Server/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mysql2": "^3.13.0"
+  }
+}
