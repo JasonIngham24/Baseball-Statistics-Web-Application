@@ -25,4 +25,5 @@ npm-debug.log*
 dist/
 build/
 
+#misc
 *.pptx
