@@ -700,50 +700,56 @@
             </div>
 
             <div class="reports-grid">
-                <div class="report-card">
+                <div class="report-card" onclick="openSeasonSummaryReport()">
                     <div class="report-icon">📈</div>
                     <h3>Season Summary</h3>
                     <p>Complete overview of team performance for the selected season</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
+                    <button class="btn btn-outline">Generate Report</button>
                 </div>
-                <div class="report-card">
+                <div class="report-card" onclick="openPlayerCardSelectionModal()">
                     <div class="report-icon">👤</div>
                     <h3>Player Card</h3>
                     <p>Individual player statistics and performance analysis</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
+                    <button class="btn btn-outline">Generate Report</button>
                 </div>
-                <div class="report-card">
+                <div class="report-card" onclick="openGameLogSelectionModal()">
                     <div class="report-icon">📊</div>
-                    <h3>Game Log</h3>
-                    <p>Detailed breakdown of each game's performance</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
+                    <h3>Game Logs</h3>
+                    <p>Detailed statistical logs from a specific game</p>
+                    <button class="btn btn-secondary">Generate</button>
                 </div>
-                <div class="report-card">
-                    <div class="report-icon">🏆</div>
-                    <h3>Leaderboards</h3>
-                    <p>Top performers in various statistical categories</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
-                </div>
-                <div class="report-card">
-                    <div class="report-icon">📉</div>
-                    <h3>Trend Analysis</h3>
-                    <p>Track performance trends over time</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
-                </div>
-                <div class="report-card">
-                    <div class="report-icon">🖨️</div>
+                <div class="report-card" onclick="openPrintableRosterReport()">
+                    <div class="report-icon roster-icon">
+                        <i class="fa-solid fa-address-card"></i>
+                    </div>
                     <h3>Printable Roster</h3>
-                    <p>Generate a print-ready team roster with stats</p>
-                    <button class="btn btn-outline" disabled>Generate Report</button>
+                    <p>Generate a print-ready team roster</p>
+                    <button class="btn btn-secondary">Generate</button>
                 </div>
             </div>
 
             <div class="notice-banner">
                 <span class="notice-icon">ℹ️</span>
-                <p>Reports will be available once the database is connected.</p>
+                <p>More reports will be available in future updates.</p>
             </div>
         </section>
     </main>
+
+    <!-- Season Summary Modal -->
+    <div id="seasonSummaryModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Season Summary Report</h3>
+                <button class="modal-close" onclick="closeModal('seasonSummaryModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="seasonSummaryContent">
+                <!-- Report content will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('seasonSummaryModal')">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Add Player Modal -->
     <div id="addPlayerModal" class="modal">
@@ -833,6 +839,97 @@
                     <button type="submit" class="btn btn-primary">Add Player</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Player Card Selection Modal -->
+    <div id="playerCardSelectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select a Player</h3>
+                <button class="modal-close" onclick="closeModal('playerCardSelectionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="playerCardSelect">Choose a player to generate their card:</label>
+                    <select id="playerCardSelect" class="filter-select" style="width: 100%;"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('playerCardSelectionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="generatePlayerCardFromSelection()">Generate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Card Modal -->
+    <div id="playerCardModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Player Card</h3>
+                <button class="modal-close" onclick="closeModal('playerCardModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="playerCardContent">
+                <!-- Player card content will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('playerCardModal')">Close</button>
+                <button class="btn btn-primary" onclick="printPlayerCard()">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Log Selection Modal -->
+    <div id="gameLogSelectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select a Game</h3>
+                <button class="modal-close" onclick="closeModal('gameLogSelectionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="gameLogSelect">Choose a game to view its log:</label>
+                    <select id="gameLogSelect" class="filter-select" style="width: 100%;"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('gameLogSelectionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="generateGameLogFromSelection()">Generate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Log Modal -->
+    <div id="gameLogModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Game Log</h3>
+                <button class="modal-close" onclick="closeModal('gameLogModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="gameLogContent">
+                <!-- Game log content will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('gameLogModal')">Close</button>
+                <button class="btn btn-primary" onclick="printGameLog()">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Roster Report Modal -->
+    <div id="printableRosterModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="printableRosterTeamName">Team Roster</h3>
+                <button class="modal-close no-print" onclick="closeModal('printableRosterModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="printableRosterContent">
+                <!-- Roster content will be injected here -->
+            </div>
+            <div class="modal-footer no-print">
+                <button class="btn btn-secondary" onclick="closeModal('printableRosterModal')">Close</button>
+                <button class="btn btn-primary" onclick="window.print()">Print</button>
+            </div>
         </div>
     </div>
 

@@ -535,7 +535,8 @@ function updatePlayerDropdowns(players) {
     const dropdowns = [
         document.getElementById('battingPlayer'),
         document.getElementById('pitchingPlayer'),
-        document.getElementById('fieldingPlayer')
+        document.getElementById('fieldingPlayer'),
+        document.getElementById('playerCardSelect')
     ];
 
     dropdowns.forEach(dropdown => {
@@ -546,7 +547,7 @@ function updatePlayerDropdowns(players) {
         
         players.forEach(player => {
             const option = document.createElement('option');
-            option.value = player.jersey;
+            option.value = player.playerId;
             option.textContent = player.name;
             dropdown.appendChild(option);
         });
@@ -1252,6 +1253,64 @@ function clearGameStatsForm() {
     if (catcherFields) catcherFields.style.display = 'none';
 }
 
+async function openPrintableRosterReport() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    try {
+        const rosterData = await apiRequest(`/teams/${selectedTeam.id}/roster`);
+        const { teamName, season, players } = rosterData;
+
+        const teamNameEl = document.getElementById('printableRosterTeamName');
+        if (teamNameEl) {
+            teamNameEl.textContent = `${teamName} (${season}) - Roster`;
+        }
+
+        const contentEl = document.getElementById('printableRosterContent');
+        if (!contentEl) return;
+
+        if (!players || players.length === 0) {
+            contentEl.innerHTML = '<p>No active players found for this team.</p>';
+            openModal('printableRosterModal');
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Year</th>
+                    <th>B/T</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${players.map(p => `
+                    <tr>
+                        <td>${p.jersey || '—'}</td>
+                        <td>${p.name}</td>
+                        <td>${p.position || '—'}</td>
+                        <td>${p.year || '—'}</td>
+                        <td>${p.bats}/${p.throws}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+
+        contentEl.innerHTML = '';
+        contentEl.appendChild(table);
+
+        openModal('printableRosterModal');
+    } catch (error) {
+        showToast(error.message || 'Failed to generate printable roster.', 'error');
+    }
+}
+
 function viewGameDetails(gameId) {
     if (!selectedTeam?.id) {
         showToast('Please select a team first.', 'error');
@@ -1543,4 +1602,252 @@ if (typeof module !== 'undefined' && module.exports) {
         calculateWHIP,
         calculateFieldingPct
     };
+}
+
+function openPlayerCardSelectionModal() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+    const players = loadedTeamData[selectedTeam.id]?.players || [];
+    const selectEl = document.getElementById('playerCardSelect');
+    selectEl.innerHTML = '<option value="">-- Select a Player --</option>';
+    players.forEach(player => {
+        selectEl.innerHTML += `<option value="${player.playerId}">${player.name} (#${player.jersey})</option>`;
+    });
+    openModal('playerCardSelectionModal');
+}
+
+function generatePlayerCardFromSelection() {
+    const playerId = document.getElementById('playerCardSelect').value;
+    if (playerId) {
+        closeModal('playerCardSelectionModal');
+        openPlayerCardReport(playerId);
+    } else {
+        showToast('Please select a player.', 'error');
+    }
+}
+
+async function openPlayerCardReport(playerId) {
+    if (!playerId) {
+        showToast('Invalid player selected.', 'error');
+        return;
+    }
+
+    try {
+        const data = await apiRequest(`/players/${playerId}/card`);
+        const contentEl = document.getElementById('playerCardContent');
+
+        const battingAvg = data.batting.ab > 0 ? (data.batting.h / data.batting.ab).toFixed(3).slice(1) : '.000';
+        const era = data.pitching.ip > 0 ? ((data.pitching.er * 9) / data.pitching.ip).toFixed(2) : '0.00';
+        const fieldingPct = data.fielding.tc > 0 ? ((data.fielding.po + data.fielding.a) / data.fielding.tc).toFixed(3).slice(1) : '1.000';
+
+        contentEl.innerHTML = `
+            <div class="player-card-grid">
+                <div class="player-card-info">
+                    <h2>${data.player.name} #${data.player.JerseyNumber}</h2>
+                    <p>${data.player.TeamName} - ${data.player.PlayerYear}</p>
+                    <div class="player-card-details">
+                        <span><strong>Position:</strong> ${data.player.Position}</span>
+                        <span><strong>Bats/Throws:</strong> ${data.player.BatStance}/${data.player.ThrowStance}</span>
+                    </div>
+                </div>
+                <div class="player-card-stats">
+                    <h3>Season Statistics</h3>
+                    <table class="player-stats-table">
+                        <thead>
+                            <tr><th>Category</th><th>Stat</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Batting Average</td><td>${battingAvg}</td></tr>
+                            <tr><td>Home Runs</td><td>${data.batting.hr}</td></tr>
+                            <tr><td>RBIs</td><td>${data.batting.rbi}</td></tr>
+                            <tr><td>ERA</td><td>${era}</td></tr>
+                            <tr><td>Wins-Losses</td><td>${data.pitching.wins}-${data.pitching.losses}</td></tr>
+                            <tr><td>Strikeouts</td><td>${data.pitching.k}</td></tr>
+                            <tr><td>Fielding %</td><td>${fieldingPct}</td></tr>
+                            <tr><td>Errors</td><td>${data.fielding.e}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        openModal('playerCardModal');
+    } catch (error) {
+        showToast(error.message || 'Failed to generate player card.', 'error');
+    }
+}
+
+function printPlayerCard() {
+    window.print();
+}
+
+async function openSeasonSummaryReport() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+
+    try {
+        const summary = await apiRequest(`/teams/${selectedTeam.id}/season-summary`);
+        const contentEl = document.getElementById('seasonSummaryContent');
+        
+        const runDiffClass = summary.runDifferential > 0 ? 'positive' : (summary.runDifferential < 0 ? 'negative' : '');
+
+        contentEl.innerHTML = `
+            <div class="section-header" style="text-align: left; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                <h2>${summary.teamName}</h2>
+                <p class="section-description">Season Performance Overview</p>
+            </div>
+            <div class="season-summary-grid">
+                <div class="summary-stat-card">
+                    <h4>Record</h4>
+                    <p>${summary.wins}-${summary.losses}-${summary.ties}</p>
+                </div>
+                <div class="summary-stat-card">
+                    <h4>Games Played</h4>
+                    <p>${summary.gamesPlayed}</p>
+                </div>
+                <div class="summary-stat-card">
+                    <h4>Runs Scored</h4>
+                    <p class="positive">${summary.runsScored}</p>
+                </div>
+                <div class="summary-stat-card">
+                    <h4>Runs Allowed</h4>
+                    <p class="negative">${summary.runsAllowed}</p>
+                </div>
+                <div class="summary-stat-card">
+                    <h4>Run Differential</h4>
+                    <p class="${runDiffClass}">${summary.runDifferential > 0 ? '+' : ''}${summary.runDifferential}</p>
+                </div>
+            </div>
+        `;
+
+        openModal('seasonSummaryModal');
+    } catch (error) {
+        showToast(error.message || 'Failed to generate season summary.', 'error');
+    }
+}
+
+function openGameLogSelectionModal() {
+    if (!selectedTeam?.id) {
+        showToast('Please select a team first.', 'error');
+        return;
+    }
+    const games = loadedTeamData[selectedTeam.id]?.games || [];
+    const selectEl = document.getElementById('gameLogSelect');
+    selectEl.innerHTML = '<option value="">-- Select a Game --</option>';
+    games.forEach(game => {
+        selectEl.innerHTML += `<option value="${game.gameId}">${game.date} - ${game.opponent}</option>`;
+    });
+    openModal('gameLogSelectionModal');
+}
+
+function generateGameLogFromSelection() {
+    const gameId = document.getElementById('gameLogSelect').value;
+    if (gameId) {
+        closeModal('gameLogSelectionModal');
+        openGameLogReport(gameId);
+    } else {
+        showToast('Please select a game.', 'error');
+    }
+}
+
+async function openGameLogReport(gameId) {
+    if (!selectedTeam?.id) {
+        showToast('No team selected for game log.', 'error');
+        return;
+    }
+    try {
+        const logData = await apiRequest(`/games/${gameId}/log?teamId=${selectedTeam.id}`);
+        const contentEl = document.getElementById('gameLogContent');
+        const { game, batting, pitching, fielding } = logData;
+
+        const teamName = selectedTeam.name;
+
+        contentEl.innerHTML = `
+            <div class="game-log-header">
+                <h2>${game.HomeTeamName} vs ${game.AwayTeamName}</h2>
+                <p>${new Date(game.GameDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>Final Score: ${game.HomeScore} - ${game.AwayScore}</strong></p>
+            </div>
+
+            <div class="game-log-section">
+                <h3>Batting - ${teamName}</h3>
+                ${createBattingTable(batting)}
+            </div>
+
+            <div class="game-log-section">
+                <h3>Pitching - ${teamName}</h3>
+                ${createPitchingTable(pitching)}
+            </div>
+
+            <div class="game-log-section">
+                <h3>Fielding - ${teamName}</h3>
+                ${createFieldingTable(fielding)}
+            </div>
+        `;
+
+        openModal('gameLogModal');
+    } catch (error) {
+        showToast(error.message || 'Failed to generate game log.', 'error');
+    }
+}
+
+function createBattingTable(battingData) {
+    if (!battingData.length) return '<p>No batting data available.</p>';
+    let table = '<table class="game-log-table"><thead><tr><th>Player</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>BB</th><th>SO</th></tr></thead><tbody>';
+    battingData.forEach(p => {
+        table += `<tr>
+            <td>${p.FirstName} ${p.LastName} (#${p.JerseyNumber})</td>
+            <td>${p.AtBats}</td>
+            <td>${p.Runs}</td>
+            <td>${p.Hits}</td>
+            <td>${p.RBIs}</td>
+            <td>${p.Walks}</td>
+            <td>${p.Strikeouts}</td>
+        </tr>`;
+    });
+    table += '</tbody></table>';
+    return table;
+}
+
+function createPitchingTable(pitchingData) {
+    if (!pitchingData.length) return '<p>No pitching data available.</p>';
+    let table = '<table class="game-log-table"><thead><tr><th>Player</th><th>IP</th><th>H</th><th>R</th><th>ER</th><th>BB</th><th>SO</th></tr></thead><tbody>';
+    pitchingData.forEach(p => {
+        table += `<tr>
+            <td>${p.FirstName} ${p.LastName} (#${p.JerseyNumber})</td>
+            <td>${p.InningsPitched.toFixed(1)}</td>
+            <td>${p.HitsAllowed}</td>
+            <td>${p.RunsAllowed}</td>
+            <td>${p.EarnedRuns}</td>
+            <td>${p.WalksAllowed}</td>
+            <td>${p.Strikeouts}</td>
+        </tr>`;
+    });
+    table += '</tbody></table>';
+    return table;
+}
+
+function createFieldingTable(fieldingData) {
+    if (!fieldingData.length) return '<p>No fielding data available.</p>';
+    let table = '<table class="game-log-table"><thead><tr><th>Player</th><th>POS</th><th>PO</th><th>A</th><th>E</th><th>DP</th></tr></thead><tbody>';
+    fieldingData.forEach(p => {
+        table += `<tr>
+            <td>${p.FirstName} ${p.LastName} (#${p.JerseyNumber})</td>
+            <td>${p.Position}</td>
+            <td>${p.Putouts}</td>
+            <td>${p.Assists}</td>
+            <td>${p.Errors}</td>
+            <td>${p.DoublePlays}</td>
+        </tr>`;
+    });
+    table += '</tbody></table>';
+    return table;
+}
+
+function printGameLog() {
+    window.print();
 }

@@ -376,6 +376,40 @@ app.get('/api/teams', async (_req, res) => {
   }
 });
 
+app.get('/api/teams/:teamId/roster', async (req, res) => {
+  try {
+    const teamId = req.params.teamId;
+    const [teamRows] = await db.query('SELECT TeamName, Season FROM TEAMS WHERE TeamID = ?', [teamId]);
+    if (!teamRows.length) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    const [playerRows] = await db.query(
+      'SELECT PlayerID, JerseyNumber, FirstName, LastName, Position, PlayerYear, BatStance, ThrowStance FROM PLAYERS WHERE TeamID = ? AND PlayerStatus = "active" ORDER BY JerseyNumber, LastName',
+      [teamId]
+    );
+
+    const players = playerRows.map(p => ({
+      id: p.PlayerID,
+      jersey: p.JerseyNumber,
+      name: `${p.FirstName} ${p.LastName}`,
+      position: p.Position,
+      year: p.PlayerYear,
+      bats: p.BatStance,
+      throws: p.ThrowStance
+    }));
+
+    res.json({
+      teamName: teamRows[0].TeamName,
+      season: teamRows[0].Season,
+      players: players
+    });
+  } catch (error) {
+    console.error('Failed to load roster:', error);
+    res.status(500).json({ error: 'Failed to load roster' });
+  }
+});
+
 app.get('/api/teams/:teamId/summary', async (req, res) => {
   try {
     const summary = await loadTeamSummary(req.params.teamId);
@@ -383,6 +417,59 @@ app.get('/api/teams/:teamId/summary', async (req, res) => {
     res.json(summary);
   } catch (error) {
     res.status(500).json({ error: 'Failed to load team summary' });
+  }
+});
+
+app.get('/api/teams/:teamId/season-summary', async (req, res) => {
+  try {
+    const teamId = Number(req.params.teamId);
+    const [teamRows] = await db.query('SELECT TeamName FROM TEAMS WHERE TeamID = ?', [teamId]);
+    if (!teamRows.length) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    const teamName = teamRows[0].TeamName;
+
+    const [games] = await db.query(
+      'SELECT * FROM GAMES WHERE HomeTeamID = ? OR AwayTeamID = ?',
+      [teamId, teamName]
+    );
+
+    let wins = 0;
+    let losses = 0;
+    let ties = 0;
+    let runsScored = 0;
+    let runsAllowed = 0;
+
+    games.forEach(game => {
+      const isHomeTeam = String(game.HomeTeamID) === String(teamId);
+      const teamScore = isHomeTeam ? game.HomeScore : game.AwayScore;
+      const opponentScore = isHomeTeam ? game.AwayScore : game.HomeScore;
+
+      runsScored += teamScore;
+      runsAllowed += opponentScore;
+
+      if (teamScore > opponentScore) {
+        wins++;
+      } else if (teamScore < opponentScore) {
+        losses++;
+      } else {
+        ties++;
+      }
+    });
+
+    res.json({
+      teamId,
+      teamName,
+      gamesPlayed: games.length,
+      wins,
+      losses,
+      ties,
+      runsScored,
+      runsAllowed,
+      runDifferential: runsScored - runsAllowed
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate season summary' });
   }
 });
 
@@ -738,6 +825,136 @@ app.get('/api/games/:gameId/stats/:playerId', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to load player game stats' });
+  }
+});
+
+app.get('/api/players/:playerId/card', async (req, res) => {
+  try {
+    const playerId = req.params.playerId;
+    if (!playerId) {
+      return res.status(400).json({ error: 'Invalid player ID' });
+    }
+
+    const [playerRows] = await db.query('SELECT p.*, t.TeamName FROM PLAYERS p JOIN TEAMS t ON p.TeamID = t.TeamID WHERE p.PlayerID = ?', [playerId]);
+    if (!playerRows.length) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+
+    const [battingRows] = await db.query('SELECT * FROM BATTING_STATS WHERE PlayerID = ?', [playerId]);
+    const [pitchingRows] = await db.query('SELECT * FROM PITCHING_STATS WHERE PlayerID = ?', [playerId]);
+    const [fieldingRows] = await db.query('SELECT * FROM FIELDING_STATS WHERE PlayerID = ?', [playerId]);
+
+    const summary = {
+      player: {
+        ...playerRows[0],
+        name: `${playerRows[0].FirstName} ${playerRows[0].LastName}`
+      },
+      batting: { g: 0, ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0, hbp: 0, sac: 0 },
+      pitching: { g: 0, gs: 0, sv: 0, ip: 0, h: 0, r: 0, er: 0, bb: 0, k: 0, hr: 0, wins: 0, losses: 0 },
+      fielding: { g: 0, tc: 0, po: 0, a: 0, e: 0, dp: 0 }
+    };
+
+    battingRows.forEach(row => {
+        summary.batting.g++;
+        summary.batting.ab += row.AtBats || 0;
+        summary.batting.r += row.Runs || 0;
+        summary.batting.h += row.Hits || 0;
+        summary.batting.doubles += row.Doubles || 0;
+        summary.batting.triples += row.Triples || 0;
+        summary.batting.hr += row.HomeRuns || 0;
+        summary.batting.rbi += row.RBIs || 0;
+        summary.batting.bb += row.Walks || 0;
+        summary.batting.so += row.Strikeouts || 0;
+        summary.batting.sb += row.StolenBases || 0;
+        summary.batting.hbp += row.HitByPitch || 0;
+        summary.batting.sac += row.Sacrifice || 0;
+    });
+
+    pitchingRows.forEach(row => {
+        summary.pitching.g++;
+        summary.pitching.gs += row.PitcherStarted ? 1 : 0;
+        const decision = String(row.Decision || '').toLowerCase();
+        if (decision === 'w') summary.pitching.wins++;
+        if (decision === 'l') summary.pitching.losses++;
+        if (decision === 's') summary.pitching.sv++;
+        summary.pitching.ip += row.InningsPitched || 0;
+        summary.pitching.h += row.HitsAllowed || 0;
+        summary.pitching.r += row.RunsAllowed || 0;
+        summary.pitching.er += row.EarnedRuns || 0;
+        summary.pitching.bb += row.WalksAllowed || 0;
+        summary.pitching.k += row.Strikeouts || 0;
+        summary.pitching.hr += row.HomeRunsAllowed || 0;
+    });
+
+    fieldingRows.forEach(row => {
+        summary.fielding.g++;
+        const putouts = row.Putouts || 0;
+        const assists = row.Assists || 0;
+        const errors = row.Errors || 0;
+        summary.fielding.po += putouts;
+        summary.fielding.a += assists;
+        summary.fielding.e += errors;
+        summary.fielding.tc += putouts + assists + errors;
+        summary.fielding.dp += row.DoublePlays || 0;
+    });
+
+    res.json(summary);
+  } catch (error) {
+    console.error('Failed to generate player card:', error);
+    res.status(500).json({ error: 'Failed to generate player card' });
+  }
+});
+
+app.get('/api/games/:gameId/log', async (req, res) => {
+  try {
+    const gameId = Number(req.params.gameId);
+    const teamId = Number(req.query.teamId);
+
+    if (!gameId || !teamId) {
+      return res.status(400).json({ error: 'Game ID and Team ID are required' });
+    }
+
+    const [gameRows] = await db.query('SELECT * FROM GAMES WHERE GameID = ?', [gameId]);
+    if (!gameRows.length) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+    const game = gameRows[0];
+
+    const [allTeams] = await db.query('SELECT TeamID, TeamName FROM TEAMS');
+    const teamNameMap = new Map(allTeams.map(t => [String(t.TeamID), t.TeamName]));
+    
+    game.HomeTeamName = teamNameMap.get(String(game.HomeTeamID)) || game.HomeTeamID;
+    game.AwayTeamName = teamNameMap.get(String(game.AwayTeamID)) || game.AwayTeamID;
+
+    const [batting] = await db.query(
+      `SELECT p.FirstName, p.LastName, p.JerseyNumber, t.TeamName, bs.* 
+       FROM BATTING_STATS bs 
+       JOIN PLAYERS p ON bs.PlayerID = p.PlayerID 
+       JOIN TEAMS t ON p.TeamID = t.TeamID
+       WHERE bs.GameID = ? AND t.TeamID = ?`, [gameId, teamId]
+    );
+
+    const [pitching] = await db.query(
+      `SELECT p.FirstName, p.LastName, p.JerseyNumber, t.TeamName, ps.* 
+       FROM PITCHING_STATS ps 
+       JOIN PLAYERS p ON ps.PlayerID = p.PlayerID 
+       JOIN TEAMS t ON p.TeamID = t.TeamID
+       WHERE ps.GameID = ? AND t.TeamID = ?`, [gameId, teamId]
+    );
+
+    const [fielding] = await db.query(
+      `SELECT p.FirstName, p.LastName, p.JerseyNumber, t.TeamName, fs.* 
+       FROM FIELDING_STATS fs 
+       JOIN PLAYERS p ON fs.PlayerID = p.PlayerID 
+       JOIN TEAMS t ON p.TeamID = t.TeamID
+       WHERE fs.GameID = ? AND t.TeamID = ?`, [gameId, teamId]
+    );
+
+    res.json({ game, batting, pitching, fielding });
+
+  } catch (error) {
+    console.error('Failed to generate game log:', error);
+    res.status(500).json({ error: 'Failed to generate game log' });
   }
 });
 

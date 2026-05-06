@@ -641,12 +641,14 @@ body {
     padding: 30px;
     text-align: center;
     box-shadow: var(--shadow-sm);
-    transition: var(--transition);
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .report-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
 }
 
 .report-icon {
@@ -1157,32 +1159,80 @@ body {
 
 /* ===== Print Styles ===== */
 @media print {
-    .main-header,
-    .main-footer,
-    .action-bar,
-    .tab-navigation,
-    .filter-bar,
-    .form-actions,
-    .action-buttons,
-    .notice-banner,
-    .team-select-overlay {
+    body, html {
+        background: #fff;
+        color: #000;
+    }
+
+    .main-header, .main-footer, .action-bar, .nav-link, .hamburger-menu, .team-indicator, .section:not(.active) {
+        display: none;
+    }
+
+    .modal-footer .btn, .modal-close, .no-print {
         display: none !important;
     }
-    
-    .main-app-container.hidden {
-        display: block !important;
-    }
-    
-    .section {
-        display: block !important;
-    }
-    
-    .table-container {
+
+    body * {
+        visibility: hidden;
+        background: transparent;
+        color: #000;
         box-shadow: none;
+        text-shadow: none;
+    }
+
+    .modal.active {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        display: block !important;
+        background: none;
+    }
+
+    .modal-content, .modal-content * {
+        visibility: visible;
     }
     
-    .data-table {
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .modal-body {
+        padding: 0;
+    }
+
+    #printableRosterContent .data-table {
         font-size: 10pt;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #printableRosterContent .data-table th,
+    #printableRosterContent .data-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        color: #000;
+    }
+
+    #printableRosterContent .data-table th {
+        background-color: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact; 
+        color-adjust: exact;
+    }
+
+    #printableRosterTeamName {
+        color: #000 !important;
+        text-align: center;
+        margin-bottom: 20px;
     }
 }
 
@@ -1404,4 +1454,157 @@ body {
         flex: 1 1 calc(33.33% - 10px);
         max-width: none;
     }
+}
+
+/* ===== Player Card Report ===== */
+.report-action {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 25px;
+}
+
+.player-card-info {
+    text-align: left;
+}
+
+.player-card-info h2 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.player-card-info p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+}
+
+.player-card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.player-card-stats h3 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.player-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.player-stats-table th, .player-stats-table td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.player-stats-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #playerCardModal, #playerCardModal * {
+        visibility: visible;
+    }
+    #playerCardModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+    .modal-header, .modal-footer {
+        display: none;
+    }
+    .modal-content {
+        box-shadow: none;
+        border: none;
+    }
+}
+
+.season-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.game-log-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.game-log-header h2 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.game-log-header p {
+    color: var(--text-secondary);
+}
+
+.game-log-section {
+    margin-bottom: 30px;
+}
+
+.game-log-section h3 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.game-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.game-log-table th, .game-log-table td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.game-log-table th {
+    background-color: var(--background-light);
+    font-weight: 600;
+}
+
+@media print {
+    #gameLogModal, #gameLogModal * {
+        visibility: visible;
+    }
+    #gameLogModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.player-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 25px;
 }
