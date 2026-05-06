@@ -573,12 +573,24 @@ function updateStatsPlayerDropdown(players) {
 function updateGamesTable(teamId) {
     const tableBody = document.getElementById('gamesTableBody');
     if (!tableBody) return;
-    
-    const games = getTeamGames(teamId);
-    
+
+    const allGames = getTeamGames(teamId);
+    const typeFilter = document.getElementById('gamesTypeFilter').value;
+
+    let filteredGames = allGames;
+
+    if (typeFilter !== 'all') {
+        filteredGames = allGames.filter(game => game.location.toLowerCase() === typeFilter);
+    }
+
     tableBody.innerHTML = '';
-    
-    games.forEach(game => {
+
+    if (filteredGames.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No matching game data available.</td></tr>';
+        return;
+    }
+
+    filteredGames.forEach(game => {
         const resultClass = game.result === 'W' ? 'win' : game.result === 'L' ? 'loss' : 'tie';
         const row = document.createElement('tr');
         const gameId = game.gameId || game.id;
@@ -596,10 +608,6 @@ function updateGamesTable(teamId) {
         `;
         tableBody.appendChild(row);
     });
-    
-    if (games.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-secondary);">No game data available.</td></tr>';
-    }
 }
 
 // Update game dropdowns in the enter stats section
@@ -859,25 +867,88 @@ function initSearch() {
     const playerSearch = document.getElementById('playerSearch');
     if (playerSearch) {
         playerSearch.addEventListener('input', function() {
-            filterPlayers(this.value.toLowerCase());
+            filterTable(this.value.toLowerCase(), 'playersTableBody');
+        });
+    }
+
+    const battingPlayerSearch = document.getElementById('battingPlayerSearch');
+    if (battingPlayerSearch) {
+        battingPlayerSearch.addEventListener('input', function() {
+            filterTable(this.value.toLowerCase(), 'battingTableBody');
+        });
+    }
+
+    const pitchingPlayerSearch = document.getElementById('pitchingPlayerSearch');
+    if (pitchingPlayerSearch) {
+        pitchingPlayerSearch.addEventListener('input', function() {
+            filterTable(this.value.toLowerCase(), 'pitchingTableBody');
+        });
+    }
+
+    const fieldingPlayerSearch = document.getElementById('fieldingPlayerSearch');
+    if (fieldingPlayerSearch) {
+        fieldingPlayerSearch.addEventListener('input', function() {
+            filterFieldingTable();
+        });
+    }
+
+    const positionFilter = document.getElementById('positionFilter');
+    if (positionFilter) {
+        positionFilter.addEventListener('change', function() {
+            filterFieldingTable();
+        });
+    }
+
+    const gamesTypeFilter = document.getElementById('gamesTypeFilter');
+    if (gamesTypeFilter) {
+        gamesTypeFilter.addEventListener('change', () => {
+            if (selectedTeam) {
+                updateGamesTable(selectedTeam.id);
+            }
         });
     }
 }
 
-function filterPlayers(searchTerm) {
-    const tableBody = document.getElementById('playersTableBody');
+function filterFieldingTable() {
+    const searchTerm = document.getElementById('fieldingPlayerSearch').value.toLowerCase();
+    const positionFilter = document.getElementById('positionFilter').value;
+    const tableBody = document.getElementById('fieldingTableBody');
+    if (!tableBody) return;
+
+    const rows = tableBody.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const playerNameCell = row.querySelector('td:nth-child(1)');
+        const positionCell = row.querySelector('td:nth-child(2)');
+        if (!playerNameCell || !positionCell) return;
+
+        const playerName = playerNameCell.textContent.toLowerCase();
+        const position = positionCell.textContent;
+
+        const nameMatch = playerName.includes(searchTerm);
+        const positionMatch = (positionFilter === 'all') || (position === positionFilter);
+
+        if (nameMatch && positionMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function filterTable(searchTerm, tableBodyId) {
+    const tableBody = document.getElementById(tableBodyId);
     if (!tableBody) return;
 
     const rows = tableBody.querySelectorAll('tr');
     
     rows.forEach(row => {
-        const playerName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-        const position = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-        const jersey = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+        const firstCell = row.querySelector('td:first-child');
+        if (!firstCell) return;
+
+        const cellText = firstCell.textContent.toLowerCase();
         
-        if (playerName.includes(searchTerm) || 
-            position.includes(searchTerm) || 
-            jersey.includes(searchTerm)) {
+        if (cellText.includes(searchTerm)) {
             row.style.display = '';
         } else {
             row.style.display = 'none';

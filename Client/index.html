@@ -77,45 +77,47 @@
                 <p class="section-description">Overview of your team's performance</p>
             </div>
 
-            <div class="stats-overview">
-                <div class="stat-card">
-                    <div class="stat-icon batting-icon">
-                        <i class="fa-solid fa-baseball-bat-ball"></i>
+            <div class="dashboard-grid">
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-icon batting-icon">
+                            <i class="fa-solid fa-baseball-bat-ball"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Team Batting Avg</h3>
+                            <p class="stat-value" id="dashboardTeamAvg">.000</p>
+                            <span class="stat-label">Season Average</span>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <h3>Team Batting Avg</h3>
-                        <p class="stat-value" id="dashboardTeamAvg">.000</p>
-                        <span class="stat-label">Season Average</span>
+                    <div class="stat-card">
+                        <div class="stat-icon pitching-icon">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Team ERA</h3>
+                            <p class="stat-value" id="dashboardTeamERA">0.00</p>
+                            <span class="stat-label">Earned Run Average</span>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon pitching-icon">
-                        <i class="fa-solid fa-bolt"></i>
+                    <div class="stat-card">
+                        <div class="stat-icon fielding-icon">
+                            <i class="fa-solid fa-baseball"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Fielding %</h3>
+                            <p class="stat-value" id="dashboardFieldingPct">.000</p>
+                            <span class="stat-label">Team Fielding</span>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <h3>Team ERA</h3>
-                        <p class="stat-value" id="dashboardTeamERA">0.00</p>
-                        <span class="stat-label">Earned Run Average</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon fielding-icon">
-                        <i class="fa-solid fa-baseball"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Fielding %</h3>
-                        <p class="stat-value" id="dashboardFieldingPct">.000</p>
-                        <span class="stat-label">Team Fielding</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon players-icon">
-                        <i class="fa-solid fa-people-group"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Active Players</h3>
-                        <p class="stat-value" id="dashboardActivePlayers">0</p>
-                        <span class="stat-label">Roster Size</span>
+                    <div class="stat-card">
+                        <div class="stat-icon players-icon">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Active Players</h3>
+                            <p class="stat-value" id="dashboardActivePlayers">0</p>
+                            <span class="stat-label">Roster Size</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -223,11 +225,6 @@
 
             <div id="gamesList" class="tab-content active">
                 <div class="filter-bar">
-                    <select id="gamesSeasonFilter" class="filter-select">
-                        <option value="2026">2026 Season</option>
-                        <option value="2025">2025 Season</option>
-                        <option value="all">All Seasons</option>
-                    </select>
                     <select id="gamesTypeFilter" class="filter-select">
                         <option value="all">All Games</option>
                         <option value="home">Home Games</option>
@@ -542,16 +539,10 @@
 
             <div id="battingStats" class="tab-content active">
                 <div class="filter-bar">
-                    <select id="battingSeasonFilter" class="filter-select">
-                        <option value="2026">2026 Season</option>
-                        <option value="2025">2025 Season</option>
-                        <option value="all">All Time</option>
-                    </select>
-                    <select id="battingGameFilter" class="filter-select">
-                        <option value="all">All Games</option>
-                        <option value="home">Home Games</option>
-                        <option value="away">Away Games</option>
-                    </select>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search players..." id="battingPlayerSearch">
+                        <span class="search-icon">🔍</span>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -596,11 +587,10 @@
 
             <div id="pitchingStats" class="tab-content active">
                 <div class="filter-bar">
-                    <select id="pitchingSeasonFilter" class="filter-select">
-                        <option value="2026">2026 Season</option>
-                        <option value="2025">2025 Season</option>
-                        <option value="all">All Time</option>
-                    </select>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search players..." id="pitchingPlayerSearch">
+                        <span class="search-icon">🔍</span>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -645,13 +635,13 @@
 
             <div id="fieldingStats" class="tab-content active">
                 <div class="filter-bar">
-                    <select id="fieldingSeasonFilter" class="filter-select">
-                        <option value="2026">2026 Season</option>
-                        <option value="2025">2025 Season</option>
-                        <option value="all">All Time</option>
-                    </select>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search players..." id="fieldingPlayerSearch">
+                        <span class="search-icon">🔍</span>
+                    </div>
                     <select id="positionFilter" class="filter-select">
                         <option value="all">All Positions</option>
+                        <option value="P">Pitcher</option>
                         <option value="C">Catcher</option>
                         <option value="1B">First Base</option>
                         <option value="2B">Second Base</option>
